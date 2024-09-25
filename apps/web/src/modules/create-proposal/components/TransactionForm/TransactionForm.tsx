@@ -20,6 +20,7 @@ export type TransactionFormType = typeof TRANSACTION_FORM_OPTIONS[number]
 export const TRANSACTION_FORM_OPTIONS = [
   TransactionType.SEND_ETH,
   TransactionType.AIRDROP,
+  TransactionType.ESCROW,
   TransactionType.PAUSE_AUCTIONS,
   TransactionType.RESUME_AUCTIONS,
   TransactionType.REPLACE_ARTWORK,
@@ -32,6 +33,7 @@ export const TransactionForm = ({ type }: TransactionFormProps) => {
   const FORMS: { [key in TransactionFormType]: ReactNode } = {
     [TransactionType.CUSTOM]: <CustomTransaction />,
     [TransactionType.AIRDROP]: <Airdrop />,
+    [TransactionType.ESCROW]: <Airdrop />, // TODO: Add escrow form
     [TransactionType.DROPOSAL]: <Droposal />,
     [TransactionType.SEND_ETH]: <SendEth />,
     [TransactionType.PAUSE_AUCTIONS]: <PauseAuctions />,
