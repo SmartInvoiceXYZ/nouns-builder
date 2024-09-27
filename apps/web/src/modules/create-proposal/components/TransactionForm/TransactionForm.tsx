@@ -5,6 +5,7 @@ import { TransactionType } from 'src/modules/create-proposal/constants'
 import { Airdrop } from './Airdrop'
 import { CustomTransaction } from './CustomTransaction'
 import { Droposal } from './Droposal'
+import { Escrow } from './Escrow'
 import { Migration } from './Migration'
 import { PauseAuctions } from './PauseAuctions'
 import { ReplaceArtwork } from './ReplaceArtwork'
@@ -33,7 +34,7 @@ export const TransactionForm = ({ type }: TransactionFormProps) => {
   const FORMS: { [key in TransactionFormType]: ReactNode } = {
     [TransactionType.CUSTOM]: <CustomTransaction />,
     [TransactionType.AIRDROP]: <Airdrop />,
-    [TransactionType.ESCROW]: <Airdrop />, // TODO: Add escrow form
+    [TransactionType.ESCROW]: <Escrow />,
     [TransactionType.DROPOSAL]: <Droposal />,
     [TransactionType.SEND_ETH]: <SendEth />,
     [TransactionType.PAUSE_AUCTIONS]: <PauseAuctions />,
