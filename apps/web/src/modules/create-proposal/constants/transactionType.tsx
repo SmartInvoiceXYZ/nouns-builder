@@ -42,11 +42,10 @@ export const TRANSACTION_TYPES = {
     iconBackdrop: 'rgba(28, 182, 135, 0.1)',
   },
   [TransactionType.ESCROW]: {
-    title: 'Escrow',
-    subTitle: 'Create an escrow proposal',
-    icon: 'airdrop', // TODO: Add escrow icon
-    iconBackdrop: 'rgba(28, 182, 135, 0.1)',
-    iconBorder: true,
+    title: 'Escrow Milestones',
+    subTitle: 'Create a proposal and escrow milestones ',
+    icon: 'escrow',
+    iconBackdrop: 'rgba(255, 155, 155, 0.102)',
   },
   [TransactionType.DROPOSAL]: {
     title: 'Droposal: Single edition',
