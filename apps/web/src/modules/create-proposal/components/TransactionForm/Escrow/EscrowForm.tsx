@@ -28,6 +28,11 @@ const MilestoneForm: React.FC<{
     removeMilestone()
   }, [removeMilestone])
 
+  // TODO: Remove logging
+  React.useEffect(() => {
+    console.log(values)
+  }, [values])
+
   return (
     <Box>
       <Input
@@ -48,7 +53,6 @@ const MilestoneForm: React.FC<{
       />
 
       <TextArea
-        mb={'x5'}
         id={`milestones.${index}.description`}
         value={values.milestones[index].description}
         onChange={handleChange}
