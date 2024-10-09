@@ -6,7 +6,7 @@ import { addressValidationSchema } from 'src/utils/yup'
 export interface Milestone {
   amount: number
   title: string
-  deliveryDate: Date
+  deliveryDate: Date | number
   media: string
   description: string
 }
@@ -14,10 +14,10 @@ export interface Milestone {
 export interface EscrowFormValues {
   clientAddress: string | AddressType
   recipientAddress: string | AddressType
-  safetyValveDate: Date
+  safetyValveDate: Date | number
   milestones: Array<Milestone>
-  startDate: Date
-  endDate: Date
+  startDate: Date | number
+  endDate: Date | number
   arbitrationProvider: string | AddressType
   arbitrationCourt: number
 }

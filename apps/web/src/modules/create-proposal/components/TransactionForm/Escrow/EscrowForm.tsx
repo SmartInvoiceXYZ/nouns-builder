@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Text } from '@zoralabs/zord'
+import { Box, Button, Flex, Stack } from '@zoralabs/zord'
 import { FieldArray, Form, Formik } from 'formik'
 import type { FormikHelpers } from 'formik'
 import { useFormikContext } from 'formik'
@@ -34,14 +34,14 @@ const MilestoneForm: React.FC<{
   }, [values])
 
   return (
-    <Box>
+    <Stack gap={'x4'}>
       <Input
-        mb={'x3'}
-        label="Amount (ETH)"
+        label="Amount"
         name={`milestones.${index}.amount`}
         type={'number'}
-        placeholder={'0.00 ETH'}
+        placeholder={'0.00'}
         autoComplete={'off'}
+        secondaryLabel={'ETH'}
       />
       <Input
         mb={'x3'}
@@ -62,7 +62,6 @@ const MilestoneForm: React.FC<{
       />
 
       <Input
-        mb={'x5'}
         type="date"
         name={`milestones.${index}.deliveryDate`}
         label={'Delivery Date'}
@@ -73,16 +72,11 @@ const MilestoneForm: React.FC<{
           justifyContent: 'flex-end',
         }}
       >
-        <Button
-          variant="outline"
-          mt={'x5'}
-          width={'auto'}
-          onClick={handleRemoveMilestone}
-        >
+        <Button variant="outline" width={'auto'} onClick={handleRemoveMilestone}>
           <Icon id="trash" />
         </Button>
       </Flex>
-    </Box>
+    </Stack>
   )
 }
 
@@ -129,7 +123,6 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
         initialValues={initialValues}
         validationSchema={EscrowFormSchema}
         onSubmit={handleSubmit}
-        validateOnBlur
         validateOnMount={false}
         validateOnChange={false}
       >
@@ -141,7 +134,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
             style={{ outline: 0, border: 0, padding: 0, margin: 0 }}
           >
             <Form>
-              <Flex direction={'column'} gap={'x5'}>
+              <Stack gap={'x5'}>
                 <Input
                   name={'recipientAddress'}
                   label={'Recipient'}
@@ -188,6 +181,18 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
                       : undefined
                   }
                 />
+
+                <Input
+                  name={'safetyValveDate'}
+                  label={'Safety Valve Date'}
+                  type={'date'}
+                  autoComplete={'off'}
+                  error={
+                    touched.safetyValveDate && errors.safetyValveDate
+                      ? errors.safetyValveDate
+                      : undefined
+                  }
+                />
                 <Box mt={'x5'}>
                   <FieldArray name="milestones">
                     {({ push, remove }) => (
@@ -205,17 +210,16 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
                             ),
                           }))}
                         />
-                        <Box style={{ alignItems: 'center' }}>
+                        <Flex align="center" justify="center">
                           <Button
                             variant="secondary"
-                            mt={'x2'}
                             width={'auto'}
                             onClick={() => handleAddMilestone(push)}
                           >
                             <Icon id="plus" />
                             Create Milestone
                           </Button>
-                        </Box>
+                        </Flex>
                       </>
                     )}
                   </FieldArray>
@@ -229,7 +233,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
                 >
                   Add Transaction to Queue
                 </Button>
-              </Flex>
+              </Stack>
             </Form>
           </Box>
         )}
