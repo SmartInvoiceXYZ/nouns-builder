@@ -2,12 +2,13 @@ import { Box, Button, Flex, Stack } from '@zoralabs/zord'
 import { FieldArray, Form, Formik } from 'formik'
 import type { FormikHelpers } from 'formik'
 import { useFormikContext } from 'formik'
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import TextArea from 'src/components/Fields/TextArea'
 import Accordion from 'src/components/Home/accordian'
 import { Icon } from 'src/components/Icon'
 import Input from 'src/components/Input/Input'
+import SingleMediaUpload from 'src/components/SingleMediaUpload/SingleMediaUpload'
 
 import { EscrowFormSchema, EscrowFormValues, Milestone } from './EscrowForm.schema'
 
@@ -21,8 +22,17 @@ const MilestoneForm: React.FC<{
   milestone: Milestone
   removeMilestone: () => void
 }> = ({ index, milestone, removeMilestone }) => {
-  const { values, handleChange, handleBlur, errors, touched } =
-    useFormikContext<EscrowFormValues>()
+  const {
+    values,
+    handleChange,
+    handleBlur,
+    errors,
+    touched,
+    setFieldValue,
+    getFieldProps,
+  } = useFormikContext<EscrowFormValues>()
+
+  const formik = useFormikContext<EscrowFormValues>()
 
   const handleRemoveMilestone = useCallback(() => {
     removeMilestone()
@@ -32,6 +42,13 @@ const MilestoneForm: React.FC<{
   React.useEffect(() => {
     console.log(values)
   }, [values])
+
+  const [isIPFSUploading, setIsIPFSUploading] = useState(false)
+
+  const handleMediaUploadStart = (media: File) => {
+    setIsIPFSUploading(true)
+    setFieldValue(`milestones.${index}.mediaType`, media.type)
+  }
 
   return (
     <Stack gap={'x4'}>
@@ -66,7 +83,16 @@ const MilestoneForm: React.FC<{
         name={`milestones.${index}.deliveryDate`}
         label={'Delivery Date'}
       />
-      <Input type="file" name={`milestones.${index}.media`} label={'Media'} />
+
+      <SingleMediaUpload
+        {...getFieldProps('media')}
+        formik={formik}
+        id={`milestones.${index}.media`}
+        inputLabel={'Media'}
+        onUploadStart={handleMediaUploadStart}
+        onUploadSettled={() => setIsIPFSUploading(false)}
+      />
+
       <Flex
         style={{
           justifyContent: 'flex-end',
@@ -90,6 +116,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
         title: 'Milestone 1',
         deliveryDate: new Date(),
         media: '',
+        mediaType: undefined,
         description: 'About Milestone 1',
       },
     ],
@@ -113,6 +140,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
       title: '',
       deliveryDate: new Date(),
       media: '',
+      mediaType: undefined,
       description: '',
     })
   }, [])
