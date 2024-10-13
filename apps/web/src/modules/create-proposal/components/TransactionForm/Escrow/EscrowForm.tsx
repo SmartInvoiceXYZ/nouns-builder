@@ -120,10 +120,8 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
         description: 'About Milestone 1',
       },
     ],
-    safetyValveDate: new Date(),
-    startDate: new Date(),
-    endDate: new Date(),
-    arbitrationProvider: '',
+    safetyValveDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+    arbitrationProvider: '0x18542245cA523DFF96AF766047fE9423E0BED3C0',
     arbitrationCourt: 0,
   }
 
@@ -153,6 +151,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
         onSubmit={handleSubmit}
         validateOnMount={false}
         validateOnChange={false}
+        validateOnBlur={true}
       >
         {({ values, errors, touched, isValid, isValidating, dirty }) => (
           <Box

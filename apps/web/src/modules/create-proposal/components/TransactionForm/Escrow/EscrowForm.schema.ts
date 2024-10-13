@@ -18,10 +18,6 @@ export interface EscrowFormValues {
   recipientAddress: string | AddressType
   safetyValveDate: Date | number
   milestones: Array<Milestone>
-  startDate: Date | number
-  endDate: Date | number
-  arbitrationProvider: string | AddressType
-  arbitrationCourt: number
 }
 
 const MilestoneSchema = yup.object({
@@ -52,18 +48,13 @@ const MilestoneSchema = yup.object({
 const EscrowFormSchema = yup.object({
   clientAddress: addressValidationSchema,
   recipientAddress: addressValidationSchema,
-  safetyValveDate: yup.date().required('Safety valve date is required'),
+  safetyValveDate: yup
+    .date()
+    .required('Safety valve date must be at least 30 days from today.'),
   milestones: yup
     .array()
     .of(MilestoneSchema)
     .min(1, 'At least one milestone is required'),
-  startDate: yup.date().required('Start date is required'),
-  endDate: yup
-    .date()
-    .min(yup.ref('startDate'), 'End date must be after start date')
-    .required('End date is required'),
-  arbitrationProvider: addressValidationSchema,
-  arbitrationCourt: yup.number().required('Arbitration court is required'),
 })
 
 export { MilestoneSchema, EscrowFormSchema }
