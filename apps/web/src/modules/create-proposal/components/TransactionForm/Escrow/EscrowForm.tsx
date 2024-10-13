@@ -77,7 +77,7 @@ const MilestoneForm: React.FC<{
         {...getFieldProps('media')}
         formik={formik}
         value={values.milestones[index].mediaFileName}
-        id={`milestones.${index}.media`}
+        id={`milestones.${index}.mediaUrl`}
         inputLabel={'Media'}
         onUploadStart={handleMediaUploadStart}
         onUploadSettled={() => setIsIPFSUploaded(true)}
@@ -105,7 +105,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
         amount: 0,
         title: 'Milestone 1',
         deliveryDate: new Date(),
-        media: '',
+        mediaUrl: '',
         mediaType: undefined,
         mediaFileName: '',
         description: 'About Milestone 1',
@@ -124,9 +124,9 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
   const handleAddMilestone = useCallback((push: (obj: Milestone) => void) => {
     push({
       amount: 0,
-      title: '',
+      title: 'New Milestone',
       deliveryDate: new Date(),
-      media: '',
+      mediaUrl: '',
       mediaType: undefined,
       mediaFileName: '',
       description: '',

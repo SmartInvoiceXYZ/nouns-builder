@@ -8,7 +8,7 @@ export interface Milestone {
   amount: number
   title: string
   deliveryDate: Date | number
-  media: string | undefined
+  mediaUrl: string | undefined
   mediaType: string | undefined
   mediaFileName: string
   description: string
@@ -28,7 +28,7 @@ const MilestoneSchema = yup.object({
     .required('Amount is required'),
   title: yup.string().required('Title is required'),
   deliveryDate: yup.date().required('Delivery date is required'),
-  media: yup.string().url('Must be a valid URL'),
+  mediaUrl: yup.string().url('Must be a valid URL'),
   mediaType: yup
     .string()
     .oneOf([
