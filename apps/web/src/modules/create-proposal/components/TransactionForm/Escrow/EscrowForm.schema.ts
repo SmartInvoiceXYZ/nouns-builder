@@ -7,7 +7,7 @@ import { addressValidationSchema } from 'src/utils/yup'
 export interface Milestone {
   amount: number
   title: string
-  deliveryDate: Date | number
+  deliveryDate: Date | number | string
   mediaUrl: string | undefined
   mediaType: string | undefined
   mediaFileName: string
@@ -17,18 +17,18 @@ export interface Milestone {
 export interface EscrowFormValues {
   clientAddress: string | AddressType
   recipientAddress: string | AddressType
-  safetyValveDate: Date | number
+  safetyValveDate: Date | number | string
   milestones: Array<Milestone>
 }
 
 const MilestoneSchema = yup.object({
   amount: yup
     .number()
-    .min(0.01, 'Amount must be at least 0.01')
+    .min(0.1, 'Amount must be greater than 0.1 ETH')
     .required('Amount is required'),
   title: yup.string().required('Title is required'),
   deliveryDate: yup.date().required('Delivery date is required'),
-  mediaUrl: yup.string().url('Must be a valid URL'),
+  mediaUrl: yup.string(),
   mediaType: yup
     .string()
     .oneOf([
@@ -44,7 +44,7 @@ const MilestoneSchema = yup.object({
       undefined,
     ]),
   mediaFileName: yup.string(),
-  description: yup.string().required('Description is required'),
+  description: yup.string(),
 })
 
 const EscrowFormSchema = yup.object({

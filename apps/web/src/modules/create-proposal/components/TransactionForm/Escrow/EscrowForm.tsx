@@ -19,10 +19,19 @@ export interface EscrowFormProps {
 
 const MilestoneForm: React.FC<{
   index: number
+  setIsMediaUploading: React.Dispatch<React.SetStateAction<boolean>>
   removeMilestone: () => void
-}> = ({ index, removeMilestone }) => {
+}> = ({ index, removeMilestone, setIsMediaUploading }) => {
   const formik = useFormikContext<EscrowFormValues>()
-  const { values, handleChange, handleBlur, setFieldValue, getFieldProps } = formik
+  const {
+    values,
+    handleChange,
+    handleBlur,
+    setFieldValue,
+    getFieldProps,
+    errors,
+    touched,
+  } = formik
   const handleRemoveMilestone = useCallback(() => {
     removeMilestone()
   }, [removeMilestone])
@@ -32,12 +41,11 @@ const MilestoneForm: React.FC<{
     console.log(values)
   }, [values])
 
-  const [isIPFSUploaded, setIsIPFSUploaded] = useState(false)
-
-  const handleMediaUploadStart = (media: File) => {
+  const handleMediaUploadStart = useCallback((media: File) => {
     setFieldValue(`milestones.${index}.mediaType`, media.type)
     setFieldValue(`milestones.${index}.mediaFileName`, media.name)
-  }
+    setIsMediaUploading(true)
+  }, [])
 
   return (
     <Stack gap={'x4'}>
@@ -48,6 +56,12 @@ const MilestoneForm: React.FC<{
         placeholder={'0.00'}
         autoComplete={'off'}
         secondaryLabel={'ETH'}
+        error={
+          (touched?.milestones as any)?.[index].amount &&
+          (errors?.milestones as any)?.[index].amount
+            ? (errors?.milestones as any)?.[index].amount
+            : undefined
+        }
       />
       <Input
         mb={'x3'}
@@ -56,6 +70,7 @@ const MilestoneForm: React.FC<{
         type={'text'}
         placeholder={'Milestone Title'}
         autoComplete={'off'}
+        errorMessage={(errors?.milestones as any)?.[index].title ?? undefined}
       />
 
       <TextArea
@@ -64,13 +79,14 @@ const MilestoneForm: React.FC<{
         onChange={handleChange}
         onBlur={handleBlur}
         inputLabel="Description"
-        placeholder={'Milestone Description'}
+        placeholder={'Milestone description is highly encouraged'}
       />
 
       <Input
         type="date"
         name={`milestones.${index}.deliveryDate`}
         label={'Delivery Date'}
+        errorMessage={(errors?.milestones as any)?.[index].deliveryDate ?? undefined}
       />
 
       <SingleMediaUpload
@@ -80,7 +96,7 @@ const MilestoneForm: React.FC<{
         id={`milestones.${index}.mediaUrl`}
         inputLabel={'Media'}
         onUploadStart={handleMediaUploadStart}
-        onUploadSettled={() => setIsIPFSUploaded(true)}
+        onUploadSettled={() => setIsMediaUploading(false)}
       />
 
       <Flex
@@ -88,15 +104,19 @@ const MilestoneForm: React.FC<{
           justifyContent: 'flex-end',
         }}
       >
-        <Button variant="outline" width={'auto'} onClick={handleRemoveMilestone}>
-          <Icon id="trash" />
-        </Button>
+        {values.milestones.length > 1 && (
+          <Button variant="outline" width={'auto'} onClick={handleRemoveMilestone}>
+            <Icon id="trash" />
+          </Button>
+        )}
       </Flex>
+      {JSON.stringify(errors.milestones)}
     </Stack>
   )
 }
 
 const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
+  const [isMediaUploading, setIsMediaUploading] = useState(false)
   const initialValues: EscrowFormValues = {
     clientAddress: '',
     recipientAddress: '',
@@ -104,14 +124,18 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
       {
         amount: 0,
         title: 'Milestone 1',
-        deliveryDate: new Date(),
+        deliveryDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10)
+          .toISOString()
+          .split('T')[0],
         mediaUrl: '',
         mediaType: undefined,
         mediaFileName: '',
         description: 'About Milestone 1',
       },
     ],
-    safetyValveDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+    safetyValveDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
+      .toISOString()
+      .split('T')[0],
   }
 
   const handleSubmit = useCallback(
@@ -221,7 +245,8 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
                               <MilestoneForm
                                 key={index}
                                 index={index}
-                                removeMilestone={() => remove(index)}
+                                setIsMediaUploading={setIsMediaUploading}
+                                removeMilestone={() => index > 0 && remove(index)}
                               />
                             ),
                           }))}
@@ -245,7 +270,12 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
                   variant={'outline'}
                   borderRadius={'curved'}
                   type="submit"
-                  disabled={!isValid || disabled}
+                  disabled={
+                    !isValid ||
+                    disabled ||
+                    isMediaUploading ||
+                    values.milestones.length === 0
+                  }
                 >
                   Add Transaction to Queue
                 </Button>
