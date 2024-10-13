@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Stack } from '@zoralabs/zord'
+import { Box, Button, Flex, Paragraph, Stack } from '@zoralabs/zord'
 import { FieldArray, Form, Formik } from 'formik'
 import type { FormikHelpers } from 'formik'
 import { useFormikContext } from 'formik'
@@ -19,21 +19,10 @@ export interface EscrowFormProps {
 
 const MilestoneForm: React.FC<{
   index: number
-  milestone: Milestone
   removeMilestone: () => void
-}> = ({ index, milestone, removeMilestone }) => {
-  const {
-    values,
-    handleChange,
-    handleBlur,
-    errors,
-    touched,
-    setFieldValue,
-    getFieldProps,
-  } = useFormikContext<EscrowFormValues>()
-
+}> = ({ index, removeMilestone }) => {
   const formik = useFormikContext<EscrowFormValues>()
-
+  const { values, handleChange, handleBlur, setFieldValue, getFieldProps } = formik
   const handleRemoveMilestone = useCallback(() => {
     removeMilestone()
   }, [removeMilestone])
@@ -43,11 +32,11 @@ const MilestoneForm: React.FC<{
     console.log(values)
   }, [values])
 
-  const [isIPFSUploading, setIsIPFSUploading] = useState(false)
+  const [isIPFSUploaded, setIsIPFSUploaded] = useState(false)
 
   const handleMediaUploadStart = (media: File) => {
-    setIsIPFSUploading(true)
     setFieldValue(`milestones.${index}.mediaType`, media.type)
+    setFieldValue(`milestones.${index}.mediaFileName`, media.name)
   }
 
   return (
@@ -87,10 +76,11 @@ const MilestoneForm: React.FC<{
       <SingleMediaUpload
         {...getFieldProps('media')}
         formik={formik}
+        value={values.milestones[index].mediaFileName}
         id={`milestones.${index}.media`}
         inputLabel={'Media'}
         onUploadStart={handleMediaUploadStart}
-        onUploadSettled={() => setIsIPFSUploading(false)}
+        onUploadSettled={() => setIsIPFSUploaded(true)}
       />
 
       <Flex
@@ -117,12 +107,11 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
         deliveryDate: new Date(),
         media: '',
         mediaType: undefined,
+        mediaFileName: '',
         description: 'About Milestone 1',
       },
     ],
     safetyValveDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-    arbitrationProvider: '0x18542245cA523DFF96AF766047fE9423E0BED3C0',
-    arbitrationCourt: 0,
   }
 
   const handleSubmit = useCallback(
@@ -139,6 +128,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
       deliveryDate: new Date(),
       media: '',
       mediaType: undefined,
+      mediaFileName: '',
       description: '',
     })
   }, [])
@@ -225,13 +215,12 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
                     {({ push, remove }) => (
                       <>
                         <Accordion
-                          items={values.milestones.map((milestone, index) => ({
-                            title: `Milestone ${index + 1}`,
+                          items={values.milestones.map((_, index) => ({
+                            title: values.milestones[index].title,
                             description: (
                               <MilestoneForm
                                 key={index}
                                 index={index}
-                                milestone={milestone}
                                 removeMilestone={() => remove(index)}
                               />
                             ),

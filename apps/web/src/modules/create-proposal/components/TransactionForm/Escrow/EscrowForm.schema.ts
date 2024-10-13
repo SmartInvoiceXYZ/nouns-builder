@@ -10,6 +10,7 @@ export interface Milestone {
   deliveryDate: Date | number
   media: string | undefined
   mediaType: string | undefined
+  mediaFileName: string
   description: string
 }
 
@@ -42,6 +43,7 @@ const MilestoneSchema = yup.object({
       'audio/wav',
       undefined,
     ]),
+  mediaFileName: yup.string(),
   description: yup.string().required('Description is required'),
 })
 

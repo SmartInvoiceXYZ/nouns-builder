@@ -1,11 +1,13 @@
 import { Stack } from '@zoralabs/zord'
+import { useState } from 'react'
 
-import { TwoColumnLayout } from '../../TwoColumnLayout'
 import EscrowDetailsDisplay from './EscrowDetailsDisplay'
 import EscrowForm from './EscrowForm'
 import { EscrowFormValues } from './EscrowForm.schema'
 
 export const Escrow: React.FC = () => {
+  const [isIPFSUploading, setIsIPFSUploading] = useState(false)
+
   const handleEscrowTransaction = (values: EscrowFormValues) => {
     // transform values to upload to IPFS
     const ipfsDataToUpload = {
@@ -28,12 +30,11 @@ export const Escrow: React.FC = () => {
       }),
       totalAmount: values.milestones.reduce((acc, x) => acc + x.amount, 0),
       klerosCourt: 1, // @notice: always use kleros General Court here
-      arbitrationProvider: '0x18542245cA523DFF96AF766047fE9423E0BED3C0',
+      arbitrationProvider: '0x18542245cA523DFF96AF766047fE9423E0BED3C0', // @notice: always use Kleros Arbitration Provider here
     }
 
-    console.log(ipfsDataToUpload)
-
     // upload to IPFS
+
     // create bundler transaction data
     // create bundler transaction and add to queue
   }
