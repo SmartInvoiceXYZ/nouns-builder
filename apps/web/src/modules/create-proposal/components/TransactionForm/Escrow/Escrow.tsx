@@ -1,13 +1,24 @@
 import { Stack } from '@zoralabs/zord'
 import { uploadFile } from 'ipfs-service'
 import { useState } from 'react'
+import { parseAbiItem } from 'viem'
+import { useChainId, usePrepareContractWrite } from 'wagmi'
 
 import EscrowForm from './EscrowForm'
 import { EscrowFormValues } from './EscrowForm.schema'
+import {
+  KLEROS_ARBITRATION_PROVIDER,
+  createEscrowData,
+  deployEscrowAbi,
+  getEscrowBundler,
+} from './EscrowUtils'
 
 export const Escrow: React.FC = () => {
   const [isIPFSUploading, setIsIPFSUploading] = useState(false)
   const [ipfsUploadError, setIpfsUploadError] = useState<Error | null>(null)
+  const [ipfsCID, setIpfsCID] = useState<string>('')
+
+  const chainId = useChainId()
 
   const handleEscrowTransaction = async (values: EscrowFormValues) => {
     console.log(values)
@@ -33,7 +44,7 @@ export const Escrow: React.FC = () => {
       })),
       totalAmount: values.milestones.reduce((acc, x) => acc + x.amount, 0),
       klerosCourt: 1,
-      arbitrationProvider: '0x18542245cA523DFF96AF766047fE9423E0BED3C0',
+      arbitrationProvider: KLEROS_ARBITRATION_PROVIDER,
     }
 
     const jsonDataToUpload = JSON.stringify(ipfsDataToUpload, null, 2)
@@ -50,6 +61,7 @@ export const Escrow: React.FC = () => {
           console.log(`Upload progress: ${progress}%`)
         },
       })
+      setIpfsCID(cid)
       setIsIPFSUploading(false)
       setIpfsUploadError(null)
       console.log('IPFS upload successful. CID:', cid, 'URI:', uri)
@@ -63,6 +75,10 @@ export const Escrow: React.FC = () => {
     }
 
     // create bundler transaction data
+    const escrowData = createEscrowData(values, ipfsCID, chainId)
+    const milestoneAmounts = values.milestones.map((x) => x.amount * 10 ** 18)
+    const fundAmount = values.milestones.reduce((acc, x) => acc + x.amount, 0) * 10 ** 18
+    console.log([milestoneAmounts, escrowData, fundAmount])
     // create bundler transaction and add to queue
   }
 

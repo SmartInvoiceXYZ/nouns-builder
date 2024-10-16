@@ -57,9 +57,9 @@ const MilestoneForm: React.FC<{
         autoComplete={'off'}
         secondaryLabel={'ETH'}
         error={
-          (touched?.milestones as any)?.[index].amount &&
-          (errors?.milestones as any)?.[index].amount
-            ? (errors?.milestones as any)?.[index].amount
+          (touched?.milestones as any)?.[index]?.amount &&
+          (errors?.milestones as any)?.[index]?.amount
+            ? (errors?.milestones as any)?.[index]?.amount
             : undefined
         }
       />
@@ -70,7 +70,7 @@ const MilestoneForm: React.FC<{
         type={'text'}
         placeholder={'Milestone Title'}
         autoComplete={'off'}
-        errorMessage={(errors?.milestones as any)?.[index].title ?? undefined}
+        errorMessage={(errors?.milestones as any)?.[index]?.title ?? undefined}
       />
 
       <TextArea
@@ -86,7 +86,7 @@ const MilestoneForm: React.FC<{
         type="date"
         name={`milestones.${index}.deliveryDate`}
         label={'Delivery Date'}
-        errorMessage={(errors?.milestones as any)?.[index].deliveryDate ?? undefined}
+        errorMessage={(errors?.milestones as any)?.[index]?.deliveryDate ?? undefined}
       />
 
       <SingleMediaUpload
@@ -110,7 +110,6 @@ const MilestoneForm: React.FC<{
           </Button>
         )}
       </Flex>
-      {JSON.stringify(errors.milestones)}
     </Stack>
   )
 }
