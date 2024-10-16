@@ -1,8 +1,11 @@
 import { Stack } from '@zoralabs/zord'
 import { uploadFile } from 'ipfs-service'
 import { useState } from 'react'
-import { parseAbiItem } from 'viem'
-import { useChainId, usePrepareContractWrite } from 'wagmi'
+import { encodeFunctionData } from 'viem'
+import { useChainId } from 'wagmi'
+
+import { TransactionType } from 'src/modules/create-proposal/constants'
+import { useProposalStore } from 'src/modules/create-proposal/stores'
 
 import EscrowForm from './EscrowForm'
 import { EscrowFormValues } from './EscrowForm.schema'
@@ -19,6 +22,7 @@ export const Escrow: React.FC = () => {
   const [ipfsCID, setIpfsCID] = useState<string>('')
 
   const chainId = useChainId()
+  const addTransaction = useProposalStore((state) => state.addTransaction)
 
   const handleEscrowTransaction = async (values: EscrowFormValues) => {
     console.log(values)
@@ -77,9 +81,26 @@ export const Escrow: React.FC = () => {
     // create bundler transaction data
     const escrowData = createEscrowData(values, ipfsCID, chainId)
     const milestoneAmounts = values.milestones.map((x) => x.amount * 10 ** 18)
-    const fundAmount = values.milestones.reduce((acc, x) => acc + x.amount, 0) * 10 ** 18
+    const fundAmount = milestoneAmounts.reduce((acc, x) => acc + x, 0)
     console.log([milestoneAmounts, escrowData, fundAmount])
-    // create bundler transaction and add to queue
+
+    const escrow = {
+      target: getEscrowBundler(chainId),
+      functionSignature: 'deployEscrow()',
+      calldata: encodeFunctionData({
+        abi: deployEscrowAbi,
+        functionName: 'deployEscrow',
+        args: [milestoneAmounts, escrowData, fundAmount],
+      }),
+      value: fundAmount.toString(),
+    }
+
+    // add to queue
+    addTransaction({
+      type: TransactionType.ESCROW,
+      summary: `Create and fund new Escrow`,
+      transactions: [escrow],
+    })
   }
 
   return (
