@@ -4,7 +4,7 @@ import { useParams, usePathname } from 'next/navigation'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import useSWR from 'swr'
-import { encodeFunctionData } from 'viem'
+import { Address, encodeFunctionData } from 'viem'
 import { useChainId } from 'wagmi'
 
 import SWR_KEYS from 'src/constants/swrKeys'
@@ -12,8 +12,8 @@ import { ProposalsResponse } from 'src/data/subgraph/requests/proposalsQuery'
 import { getProposals } from 'src/data/subgraph/requests/proposalsQuery'
 import { TransactionType } from 'src/modules/create-proposal/constants'
 import { useProposalStore } from 'src/modules/create-proposal/stores'
+import { getChainFromLocalStorage } from 'src/utils/getChainFromLocalStorage'
 
-import EscrowDetailsDisplay from './EscrowDetailsDisplay'
 import EscrowForm from './EscrowForm'
 import { EscrowFormValues } from './EscrowForm.schema'
 import {
@@ -28,9 +28,9 @@ export const Escrow: React.FC = () => {
   const [ipfsUploadError, setIpfsUploadError] = useState<Error | null>(null)
   const [ipfsCID, setIpfsCID] = useState<string>('')
 
-  const { query, isReady, basePath } = useRouter()
+  const { query, isReady } = useRouter()
 
-  const chainId = useChainId()
+  const { id: chainId } = getChainFromLocalStorage()
 
   const addTransaction = useProposalStore((state) => state.addTransaction)
   const removeTransactions = useProposalStore((state) => state.removeAllTransactions)
@@ -113,7 +113,7 @@ export const Escrow: React.FC = () => {
     const escrowData = createEscrowData(values, ipfsCID, chainId)
     const milestoneAmounts = values.milestones.map((x) => x.amount * 10 ** 18)
     const fundAmount = milestoneAmounts.reduce((acc, x) => acc + x, 0)
-    console.log([milestoneAmounts, escrowData, fundAmount])
+    console.log([milestoneAmounts, escrowData, String(fundAmount).length])
 
     const escrow = {
       target: getEscrowBundler(chainId),
@@ -123,7 +123,7 @@ export const Escrow: React.FC = () => {
         functionName: 'deployEscrow',
         args: [milestoneAmounts, escrowData, fundAmount],
       }),
-      value: fundAmount.toString(),
+      value: Number(fundAmount * 10 ** -18).toString(),
     }
 
     // add to queue
