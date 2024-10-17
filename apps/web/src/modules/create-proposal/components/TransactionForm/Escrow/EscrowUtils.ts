@@ -1,4 +1,4 @@
-import { decode } from 'bs58'
+import { toBytes, toHex } from 'viem'
 import { Address, Hex, encodeAbiParameters } from 'viem'
 
 import { EscrowFormValues } from './EscrowForm.schema'
@@ -39,15 +39,14 @@ function getEscrowBundler(chainId: number | string): Address {
   }
 }
 
-function convertIpfsCidV0ToByte32(cid: string) {
-  return `0x${Buffer.from(decode(cid).slice(2)).toString('hex')}` as Hex
-}
-
 function createEscrowData(
   values: EscrowFormValues,
   ipfsCID: string,
   chainId: string | number
 ) {
+  const warappedTokenAddress = getWrappedTokenAddress(chainId)
+  const terminationTime = new Date(values.safetyValveDate).getTime()
+  const ipfsBytesCid = toHex(toBytes('ipfsCID', { size: 32 }))
   const encodedParams = encodeAbiParameters(
     ['address', 'address', 'address', 'uint256', 'bytes32', 'address', 'address'].map(
       (type) => ({ type })
@@ -55,9 +54,9 @@ function createEscrowData(
     [
       values.clientAddress,
       KLEROS_ARBITRATION_PROVIDER,
-      getWrappedTokenAddress(chainId),
-      new Date(values.safetyValveDate).getTime(),
-      convertIpfsCidV0ToByte32(ipfsCID),
+      warappedTokenAddress,
+      terminationTime,
+      ipfsBytesCid,
       values.recipientAddress,
       values.recipientAddress,
     ]
