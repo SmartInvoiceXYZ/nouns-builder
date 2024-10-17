@@ -113,17 +113,7 @@ const SmartInput: React.FC<SmartInputProps> = ({
   return (
     <Box as="fieldset" mb={'x8'} p={'x0'} className={defaultFieldsetStyle}>
       {inputLabel && <label className={defaultInputLabelStyle}>{inputLabel}</label>}
-      {errorMessage && (
-        <Box
-          position={'absolute'}
-          right={'x2'}
-          top={'x10'}
-          fontSize={12}
-          className={defaultInputErrorMessageStyle}
-        >
-          {errorMessage}
-        </Box>
-      )}
+
       <input
         id={id}
         type={type}
@@ -146,6 +136,18 @@ const SmartInput: React.FC<SmartInputProps> = ({
             : undefined
         }
       />
+
+      {errorMessage && (
+        <Box
+          right={'x2'}
+          top={'x15'}
+          pt={'x4'}
+          fontSize={14}
+          className={defaultInputErrorMessageStyle}
+        >
+          {errorMessage}
+        </Box>
+      )}
       {isAddress && !!value.toString().length && !errorMessage && (
         <Flex
           align={'center'}
