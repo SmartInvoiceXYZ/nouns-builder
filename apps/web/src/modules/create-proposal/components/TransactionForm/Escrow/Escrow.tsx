@@ -129,7 +129,9 @@ export const Escrow: React.FC = () => {
     // add to queue
     addTransaction({
       type: TransactionType.ESCROW,
-      summary: `Create and fund new Escrow`,
+      summary: `Create and fund new Escrow with ${Number(
+        fundAmount * 10 ** -18
+      ).toPrecision(5)} ETH`,
       transactions: [escrow],
     })
 
