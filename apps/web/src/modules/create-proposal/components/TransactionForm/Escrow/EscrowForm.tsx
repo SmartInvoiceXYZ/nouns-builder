@@ -13,8 +13,9 @@ import SingleMediaUpload from 'src/components/SingleMediaUpload/SingleMediaUploa
 import { EscrowFormSchema, EscrowFormValues, Milestone } from './EscrowForm.schema'
 
 export interface EscrowFormProps {
-  onSubmit?: (values: EscrowFormValues, actions: FormikHelpers<EscrowFormValues>) => void
-  disabled?: boolean
+  onSubmit: (values: EscrowFormValues, actions: FormikHelpers<EscrowFormValues>) => void
+  isFormSubmitting: boolean
+  escrowFormDataIpfsCID: string
 }
 
 const MilestoneForm: React.FC<{
@@ -53,7 +54,7 @@ const MilestoneForm: React.FC<{
         label="Amount"
         name={`milestones.${index}.amount`}
         type={'number'}
-        placeholder={'0.00'}
+        placeholder={'1.0'}
         autoComplete={'off'}
         secondaryLabel={'ETH'}
         error={
@@ -114,7 +115,11 @@ const MilestoneForm: React.FC<{
   )
 }
 
-const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
+const EscrowForm: React.FC<EscrowFormProps> = ({
+  onSubmit,
+  isFormSubmitting,
+  escrowFormDataIpfsCID,
+}) => {
   const [isMediaUploading, setIsMediaUploading] = useState(false)
   const initialValues: EscrowFormValues = {
     clientAddress: '',
@@ -144,17 +149,22 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
     [onSubmit]
   )
 
-  const handleAddMilestone = useCallback((push: (obj: Milestone) => void) => {
-    push({
-      amount: 0,
-      title: 'New Milestone',
-      deliveryDate: new Date(),
-      mediaUrl: '',
-      mediaType: undefined,
-      mediaFileName: '',
-      description: '',
-    })
-  }, [])
+  const handleAddMilestone = useCallback(
+    (push: (obj: Milestone) => void, previousMilestoneDate: any) => {
+      push({
+        amount: 0.5,
+        title: 'New Milestone',
+        deliveryDate: new Date(Date.parse(previousMilestoneDate) + 864000000)
+          .toISOString()
+          .slice(0, 10), // adds 10 days to previous milestone
+        mediaUrl: '',
+        mediaType: undefined,
+        mediaFileName: '',
+        description: '',
+      })
+    },
+    []
+  )
 
   return (
     <Box w={'100%'}>
@@ -170,7 +180,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
           <Box
             data-testid="Escrow-form"
             as={'fieldset'}
-            disabled={isValidating || disabled}
+            disabled={isValidating || isFormSubmitting}
             style={{ outline: 0, border: 0, padding: 0, margin: 0 }}
           >
             <Form>
@@ -235,7 +245,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
                 />
                 <Box mt={'x5'}>
                   <FieldArray name="milestones">
-                    {({ push, remove }) => (
+                    {({ push, remove, form }) => (
                       <>
                         <Accordion
                           items={values.milestones.map((_, index) => ({
@@ -254,7 +264,14 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
                           <Button
                             variant="secondary"
                             width={'auto'}
-                            onClick={() => handleAddMilestone(push)}
+                            onClick={() =>
+                              handleAddMilestone(
+                                push,
+                                form?.values?.milestones[
+                                  form?.values?.milestones.length - 1
+                                ]?.deliveryDate
+                              )
+                            }
                           >
                             <Icon id="plus" />
                             Create Milestone
@@ -271,12 +288,16 @@ const EscrowForm: React.FC<EscrowFormProps> = ({ onSubmit, disabled }) => {
                   type="submit"
                   disabled={
                     !isValid ||
-                    disabled ||
+                    isFormSubmitting ||
                     isMediaUploading ||
                     values.milestones.length === 0
                   }
                 >
-                  Add Transaction to Queue
+                  {isFormSubmitting
+                    ? 'Adding Transaction to Queue'
+                    : !escrowFormDataIpfsCID
+                    ? 'Add Transaction to Queue'
+                    : 'Update Transaction Data'}
                 </Button>
               </Stack>
             </Form>

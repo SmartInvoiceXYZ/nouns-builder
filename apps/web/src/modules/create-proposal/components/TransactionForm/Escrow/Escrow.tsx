@@ -23,9 +23,10 @@ export const Escrow: React.FC = () => {
 
   const chainId = useChainId()
   const addTransaction = useProposalStore((state) => state.addTransaction)
+  const removeTransactions = useProposalStore((state) => state.removeAllTransactions)
 
   const handleEscrowTransaction = async (values: EscrowFormValues) => {
-    console.log(values)
+    removeTransactions()
     const ipfsDataToUpload = {
       endDate: new Date(
         values.milestones[values.milestones.length - 1].deliveryDate
@@ -101,13 +102,18 @@ export const Escrow: React.FC = () => {
       summary: `Create and fund new Escrow`,
       transactions: [escrow],
     })
+
+    setIsIPFSUploading(false)
   }
 
   return (
     <Stack data-testid="escrow">
-      <EscrowForm onSubmit={handleEscrowTransaction} disabled={isIPFSUploading} />
-      {isIPFSUploading && <div>Uploading to IPFS...</div>}
-      {ipfsUploadError && <div>Error: {ipfsUploadError.message}</div>}
+      <EscrowForm
+        onSubmit={handleEscrowTransaction}
+        isFormSubmitting={isIPFSUploading}
+        escrowFormDataIpfsCID={ipfsCID}
+      />
+      {ipfsUploadError?.message && <div>Error: {ipfsUploadError.message}</div>}
     </Stack>
   )
 }
