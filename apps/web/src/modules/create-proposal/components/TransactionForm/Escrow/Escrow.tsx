@@ -7,6 +7,7 @@ import { useChainId } from 'wagmi'
 import { TransactionType } from 'src/modules/create-proposal/constants'
 import { useProposalStore } from 'src/modules/create-proposal/stores'
 
+import EscrowDetailsDisplay from './EscrowDetailsDisplay'
 import EscrowForm from './EscrowForm'
 import { EscrowFormValues } from './EscrowForm.schema'
 import {
@@ -107,7 +108,7 @@ export const Escrow: React.FC = () => {
   }
 
   return (
-    <Stack data-testid="escrow">
+    <Stack>
       <EscrowForm
         onSubmit={handleEscrowTransaction}
         isFormSubmitting={isIPFSUploading}
