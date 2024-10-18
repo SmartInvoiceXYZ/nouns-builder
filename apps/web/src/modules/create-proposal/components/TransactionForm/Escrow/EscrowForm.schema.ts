@@ -1,4 +1,3 @@
-import { media } from '@zoralabs/zord'
 import * as yup from 'yup'
 
 import { AddressType } from 'src/typings'

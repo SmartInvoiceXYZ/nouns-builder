@@ -26,7 +26,7 @@ import {
 export const Escrow: React.FC = () => {
   const [isIPFSUploading, setIsIPFSUploading] = useState(false)
   const [ipfsUploadError, setIpfsUploadError] = useState<Error | null>(null)
-  const [ipfsCID, setIpfsCID] = useState<string>('')
+  const [ipfsCID, setIpfsCID] = useState('')
 
   const { query, isReady } = useRouter()
 
@@ -130,8 +130,8 @@ export const Escrow: React.FC = () => {
     addTransaction({
       type: TransactionType.ESCROW,
       summary: `Create and fund new Escrow with ${Number(
-        fundAmount * 10 ** -18
-      ).toPrecision(5)} ETH`,
+        fundAmount * 10 ** -18 || 0
+      )?.toPrecision(5)} ETH`,
       transactions: [escrow],
     })
 

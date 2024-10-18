@@ -22,7 +22,7 @@ export default function EscrowDetailsDisplay() {
             Total Escrow Amount
           </Text>
           <Text variant="heading-sm" style={{ fontWeight: 'bold' }}>
-            {totalEscrowAmount.toPrecision(5) || '0.00'} ETH
+            {totalEscrowAmount ?? '0.00'} ETH
           </Text>
         </Box>
         <Box>
