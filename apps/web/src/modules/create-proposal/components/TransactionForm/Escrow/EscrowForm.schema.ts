@@ -36,7 +36,7 @@ export interface EscrowFormProps {
 export const MilestoneSchema = yup.object({
   amount: yup
     .number()
-    .min(0.1, 'Amount must be greater than 0.1 ETH')
+    .moreThan(0, 'Amount must be greater than 0')
     .required('Amount is required'),
   title: yup.string().required('Title is required'),
   endDate: yup.date().required('End date is required'),

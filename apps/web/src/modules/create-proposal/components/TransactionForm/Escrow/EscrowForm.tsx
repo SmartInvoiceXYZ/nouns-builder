@@ -29,9 +29,9 @@ const MilestoneForm: React.FC<{
 }> = ({ index, removeMilestone, setIsMediaUploading }) => {
   const formik = useFormikContext<EscrowFormValues>()
 
-  const handleRemoveMilestone = useCallback(() => {
+  const handleRemoveMilestone = () => {
     removeMilestone()
-  }, [removeMilestone])
+  }
 
   // TODO: Remove logging
   React.useEffect(() => {
