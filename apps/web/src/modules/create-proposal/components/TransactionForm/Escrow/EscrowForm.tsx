@@ -122,7 +122,6 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
   isFormSubmitting,
   escrowFormDataIpfsCID,
 }) => {
-  const isMobile = useLayoutStore((x) => x.isMobile)
   const [isMediaUploading, setIsMediaUploading] = useState(false)
 
   const { formValues, setFormValues } = useEscrowFormStore()
@@ -174,8 +173,8 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
             style={{ outline: 0, border: 0, padding: 0, margin: 0 }}
           >
             <Form>
-              {!isMobile && <EscrowDetailsDisplay />}
               <Stack gap={'x5'}>
+                <EscrowDetailsDisplay />
                 <SmartInput
                   type={TEXT}
                   formik={formik}
