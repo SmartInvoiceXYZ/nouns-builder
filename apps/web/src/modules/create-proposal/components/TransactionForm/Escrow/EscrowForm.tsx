@@ -33,16 +33,14 @@ const MilestoneForm: React.FC<{
     removeMilestone()
   }
 
-  // TODO: Remove logging
-  React.useEffect(() => {
-    console.log(formik.values)
-  }, [formik.values])
-
-  const handleMediaUploadStart = useCallback((media: File) => {
-    formik.setFieldValue(`milestones.${index}.mediaType`, media.type)
-    formik.setFieldValue(`milestones.${index}.mediaFileName`, media.name)
-    setIsMediaUploading(true)
-  }, [])
+  const handleMediaUploadStart = useCallback(
+    (media: File) => {
+      formik.setFieldValue(`milestones.${index}.mediaType`, media.type)
+      formik.setFieldValue(`milestones.${index}.mediaFileName`, media.name)
+      setIsMediaUploading(true)
+    },
+    [formik, index, setIsMediaUploading]
+  )
 
   return (
     <Stack gap={'x4'}>
@@ -81,15 +79,13 @@ const MilestoneForm: React.FC<{
       />
 
       <DatePicker
-        {...formik.getFieldProps(`milestones.${index}.deliveryDate`)}
+        {...formik.getFieldProps(`milestones.${index}.endDate`)}
         formik={formik}
-        id={`milestones.${index}.deliveryDate`}
+        id={`milestones.${index}.endDate`}
         inputLabel={'Delivery Date'}
         placeholder={'yyyy-mm-dd'}
         dateFormat="Y-m-d"
-        errorMessage={
-          (formik.errors?.milestones as any)?.[index]?.deliveryDate ?? undefined
-        }
+        errorMessage={(formik.errors?.milestones as any)?.[index]?.endDate ?? undefined}
       />
 
       <SingleMediaUpload
@@ -156,13 +152,13 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
   )
 
   return (
-    <Box w={'100%'}>
+    <Box>
       <Formik
         initialValues={formValues}
         validationSchema={EscrowFormSchema}
         onSubmit={handleSubmit}
         validateOnMount={false}
-        validateOnChange={false}
+        validateOnChange={true}
         validateOnBlur={true}
       >
         {(formik) => (
@@ -238,7 +234,9 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
                                 key={index}
                                 index={index}
                                 setIsMediaUploading={setIsMediaUploading}
-                                removeMilestone={() => index > 0 && remove(index)}
+                                removeMilestone={() =>
+                                  formik.values.milestones.length != 1 && remove(index)
+                                }
                               />
                             ),
                           }))}
