@@ -1,7 +1,8 @@
-import { toBytes, toHex } from 'viem'
-import { Address, Hex, encodeAbiParameters } from 'viem'
+import { Address, encodeAbiParameters, toBytes, toHex } from 'viem'
+import { create } from 'zustand'
+import { createJSONStorage, persist } from 'zustand/middleware'
 
-import { EscrowFormValues } from './EscrowForm.schema'
+import { EscrowFormState, EscrowFormValues } from './EscrowForm.schema'
 
 const KLEROS_ARBITRATION_PROVIDER =
   '0x18542245cA523DFF96AF766047fE9423E0BED3C0' as Address
@@ -97,9 +98,45 @@ const deployEscrowAbi = [
   },
 ]
 
+const initialState: EscrowFormValues = {
+  clientAddress: '',
+  recipientAddress: '',
+  milestones: [
+    {
+      amount: 0.5,
+      title: 'Milestone 1',
+      endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10)
+        .toISOString()
+        .split('T')[0] as never,
+      mediaUrl: '',
+      mediaType: undefined,
+      mediaFileName: '',
+      description: 'About Milestone 1',
+    },
+  ],
+  safetyValveDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
+    .toISOString()
+    .split('T')[0],
+}
+
+const useEscrowFormStore = create(
+  persist<EscrowFormState>(
+    (set) => ({
+      formValues: initialState,
+      setFormValues: (values) => set({ formValues: values }),
+      resetForm: () => set({ formValues: initialState }),
+    }),
+    {
+      name: 'escrow-form-storage',
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+)
+
 export {
   createEscrowData,
   getEscrowBundler,
   KLEROS_ARBITRATION_PROVIDER,
   deployEscrowAbi,
+  useEscrowFormStore,
 }

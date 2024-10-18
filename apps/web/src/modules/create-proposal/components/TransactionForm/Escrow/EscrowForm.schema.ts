@@ -1,3 +1,4 @@
+import { FormikHelpers } from 'formik'
 import * as yup from 'yup'
 
 import { AddressType } from 'src/typings'
@@ -6,7 +7,7 @@ import { addressValidationSchema } from 'src/utils/yup'
 export interface Milestone {
   amount: number
   title: string
-  deliveryDate: Date | number | string
+  endDate: number & string & Date
   mediaUrl: string | undefined
   mediaType: string | undefined
   mediaFileName: string
@@ -20,13 +21,25 @@ export interface EscrowFormValues {
   milestones: Array<Milestone>
 }
 
-const MilestoneSchema = yup.object({
+export interface EscrowFormState {
+  formValues: EscrowFormValues
+  setFormValues: (values: EscrowFormValues) => void
+  resetForm: () => void
+}
+
+export interface EscrowFormProps {
+  onSubmit: (values: EscrowFormValues, actions: FormikHelpers<EscrowFormValues>) => void
+  isFormSubmitting: boolean
+  escrowFormDataIpfsCID: string
+}
+
+export const MilestoneSchema = yup.object({
   amount: yup
     .number()
     .min(0.1, 'Amount must be greater than 0.1 ETH')
     .required('Amount is required'),
   title: yup.string().required('Title is required'),
-  deliveryDate: yup.date().required('Delivery date is required'),
+  endDate: yup.date().required('End date is required'),
   mediaUrl: yup.string(),
   mediaType: yup
     .string()
@@ -46,7 +59,7 @@ const MilestoneSchema = yup.object({
   description: yup.string(),
 })
 
-const EscrowFormSchema = yup.object({
+export const EscrowFormSchema = yup.object({
   clientAddress: addressValidationSchema,
   recipientAddress: addressValidationSchema,
   safetyValveDate: yup
@@ -57,5 +70,3 @@ const EscrowFormSchema = yup.object({
     .of(MilestoneSchema)
     .min(1, 'At least one milestone is required'),
 })
-
-export { MilestoneSchema, EscrowFormSchema }

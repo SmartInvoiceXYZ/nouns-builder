@@ -1,27 +1,26 @@
-import { Box, Button, Flex, Paragraph, Stack } from '@zoralabs/zord'
+import { Box, Button, Flex, Stack } from '@zoralabs/zord'
 import { FieldArray, Form, Formik } from 'formik'
 import type { FormikHelpers } from 'formik'
 import { useFormikContext } from 'formik'
+import { truncate } from 'lodash'
 import React, { useCallback, useState } from 'react'
 
 import DatePicker from 'src/components/Fields/Date'
 import SmartInput from 'src/components/Fields/SmartInput'
-import TextArea from 'src/components/Fields/TextArea'
 import { NUMBER, TEXT, TEXTAREA } from 'src/components/Fields/types'
 import Accordion from 'src/components/Home/accordian'
 import { Icon } from 'src/components/Icon'
-import Input from 'src/components/Input/Input'
 import SingleMediaUpload from 'src/components/SingleMediaUpload/SingleMediaUpload'
 import { useLayoutStore } from 'src/stores'
 
 import EscrowDetailsDisplay from './EscrowDetailsDisplay'
-import { EscrowFormSchema, EscrowFormValues, Milestone } from './EscrowForm.schema'
-
-export interface EscrowFormProps {
-  onSubmit: (values: EscrowFormValues, actions: FormikHelpers<EscrowFormValues>) => void
-  isFormSubmitting: boolean
-  escrowFormDataIpfsCID: string
-}
+import {
+  EscrowFormProps,
+  EscrowFormSchema,
+  EscrowFormValues,
+  Milestone,
+} from './EscrowForm.schema'
+import { useEscrowFormStore } from './EscrowUtils'
 
 const MilestoneForm: React.FC<{
   index: number
@@ -124,44 +123,30 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
   escrowFormDataIpfsCID,
 }) => {
   const isMobile = useLayoutStore((x) => x.isMobile)
-
   const [isMediaUploading, setIsMediaUploading] = useState(false)
-  const initialValues: EscrowFormValues = {
-    clientAddress: '',
-    recipientAddress: '',
-    milestones: [
-      {
-        amount: 0,
-        title: 'Milestone 1',
-        deliveryDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10)
-          .toISOString()
-          .split('T')[0],
-        mediaUrl: '',
-        mediaType: undefined,
-        mediaFileName: '',
-        description: 'About Milestone 1',
-      },
-    ],
-    safetyValveDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
-      .toISOString()
-      .split('T')[0],
-  }
+
+  const { formValues, setFormValues } = useEscrowFormStore()
 
   const handleSubmit = useCallback(
     (values: EscrowFormValues, actions: FormikHelpers<EscrowFormValues>) => {
+      setFormValues(values)
       onSubmit?.(values, actions)
     },
-    [onSubmit]
+    [onSubmit, setFormValues]
   )
 
   const handleAddMilestone = useCallback(
-    (push: (obj: Milestone) => void, previousMilestoneDate: any) => {
+    (
+      push: (obj: Milestone) => void,
+      previousMilestone: Milestone,
+      newMilestoneIndex: number
+    ) => {
       push({
         amount: 0.5,
-        title: 'New Milestone',
-        deliveryDate: new Date(Date.parse(previousMilestoneDate) + 864000000)
+        title: 'Milestone ' + newMilestoneIndex,
+        endDate: new Date(Date.parse(previousMilestone?.endDate) + 864000000)
           .toISOString()
-          .slice(0, 10), // adds 10 days to previous milestone
+          .slice(0, 10) as never, // adds 10 days to previous milestone
         mediaUrl: '',
         mediaType: undefined,
         mediaFileName: '',
@@ -174,7 +159,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
   return (
     <Box w={'100%'}>
       <Formik
-        initialValues={initialValues}
+        initialValues={formValues}
         validationSchema={EscrowFormSchema}
         onSubmit={handleSubmit}
         validateOnMount={false}
@@ -245,7 +230,10 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
                       <>
                         <Accordion
                           items={formik.values.milestones.map((_, index) => ({
-                            title: formik.values.milestones[index].title,
+                            title: truncate(formik.values.milestones[index].title, {
+                              length: 32,
+                              separator: '...',
+                            }),
                             description: (
                               <MilestoneForm
                                 key={index}
@@ -265,7 +253,8 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
                                 push,
                                 formik.values?.milestones[
                                   formik.values?.milestones.length - 1
-                                ]?.deliveryDate
+                                ],
+                                formik.values?.milestones.length + 1
                               )
                             }
                           >

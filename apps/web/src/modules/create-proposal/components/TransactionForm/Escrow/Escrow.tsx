@@ -1,11 +1,9 @@
 import { Stack } from '@zoralabs/zord'
 import { uploadFile } from 'ipfs-service'
-import { useParams, usePathname } from 'next/navigation'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import useSWR from 'swr'
 import { Address, encodeFunctionData } from 'viem'
-import { useChainId } from 'wagmi'
 
 import SWR_KEYS from 'src/constants/swrKeys'
 import { ProposalsResponse } from 'src/data/subgraph/requests/proposalsQuery'
@@ -50,16 +48,16 @@ export const Escrow: React.FC = () => {
       title: 'Proposal #' + (lastProposalId + 1),
       description: window?.location.href.replace(
         '/proposal/create',
-        'vote/' + lastProposalId + 1
+        '/vote/' + lastProposalId + 1
       ),
       endDate: new Date(
-        values.milestones[values.milestones.length - 1].deliveryDate
+        values.milestones[values.milestones.length - 1].endDate
       ).getTime(),
       milestones: values.milestones.map((x, index) => ({
         id: 'milestone-00' + index,
         title: x.title,
         description: x.description,
-        deliveryDate: new Date(x.deliveryDate).getTime(),
+        endDate: new Date(x.endDate).getTime(),
         ...(x.mediaType && x.mediaUrl
           ? {
               documents: [
