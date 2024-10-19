@@ -87,7 +87,7 @@ const Date: React.FC<DateProps> = ({
           fontSize={14}
           className={defaultHelperTextStyle}
         >
-          {errorMessage as string}
+          {helperText}
         </Box>
       )}
       {errorMessage && (

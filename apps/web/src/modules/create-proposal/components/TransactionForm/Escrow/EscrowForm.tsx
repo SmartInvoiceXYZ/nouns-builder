@@ -217,6 +217,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
                       ? formik.errors.safetyValveDate
                       : undefined
                   }
+                  helperText="This is the date funds can be pulled back from the escrow after by dao / multisig."
                 />
                 <Box mt={'x5'}>
                   <FieldArray name="milestones">
