@@ -1,4 +1,6 @@
 import { Stack, Text } from '@zoralabs/zord'
+import axios from 'axios'
+import useSWR from 'swr'
 import {
   Hex,
   bytesToHex,
@@ -8,8 +10,11 @@ import {
 } from 'viem'
 
 import Accordion from 'src/components/Home/accordian'
+import { OptionalLink } from 'src/components/OptionalLink'
+import SWR_KEYS from 'src/constants/swrKeys'
 import { IpfsMilestone } from 'src/modules/create-proposal/components/TransactionForm/Escrow/EscrowForm.schema'
 import { convertByte32ToIpfsCidV0 } from 'src/modules/create-proposal/components/TransactionForm/Escrow/EscrowUtils'
+import { ExternalLinks } from 'src/modules/dao/components/About/ExternalLinks'
 
 import { DecodedTransaction } from './ProposalDescription'
 
@@ -19,7 +24,7 @@ export const MilestoneDetails = ({
   decodedTxnData: DecodedTransaction
 }) => {
   // Decode Calldata to get ipfs CID
-  const decodedAbiData: never[] = decodeAbiParameters(
+  const decodedAbiData: any[] = decodeAbiParameters(
     parseAbiParameters([
       'address client',
       'address resolver',
@@ -32,34 +37,55 @@ export const MilestoneDetails = ({
     decodedTxnData?._escrowData?.value as Hex
   )
 
-  console.log(decodedAbiData)
+  const invoiceCid = convertByte32ToIpfsCidV0(decodedAbiData[4])
 
-  console.log(convertByte32ToIpfsCidV0(decodedAbiData[4]))
-
-  const milestones: IpfsMilestone[] = [
-    // sample data
+  const { data: invoiceData } = useSWR(
+    invoiceCid ? [SWR_KEYS.IPFS, invoiceCid] : null,
+    () => axios.get(`https://ipfs.io/ipfs/${invoiceCid}`).then((x) => x.data),
     {
-      title: 'Milestone 1',
-      description: 'About Milestone 1',
-      endDate: 1730073600000 as never,
-      documents: [
-        {
-          type: 'ipfs',
-          src: 'ipfs://QmdpYYybaAbiZDXb4Z7QtJptR3jarN1bKNQbv6jB8GBp8m',
-          mimeType: 'image/png',
-          createdAt: 1729243503628,
-        },
-      ],
-    },
-  ]
+      revalidateOnFocus: false,
+    }
+  )
 
-  const milestonesDetails = milestones.map((milestone, index) => {
+  const milestones: IpfsMilestone[] = invoiceData?.milestones
+
+  console.log(milestones)
+
+  const milestonesDetails = milestones?.map((milestone, index) => {
     return {
-      title: milestone.title as string,
+      title: (
+        <Text>
+          {index + 1}. {milestone.title}
+        </Text>
+      ),
       description: (
-        <Stack direction={'row'} align={'center'} justify={'space-between'}>
-          <Text>{milestone.title}</Text>
-          {milestone.description}
+        <Stack gap={'x5'}>
+          <Stack direction={'row'} align={'center'} justify={'space-between'}>
+            <Text variant="label-xs" color="tertiary">
+              {'Amount: ' + '0.00 ETH'}
+            </Text>
+            <Text variant="label-xs" color="tertiary">
+              {'Due by: ' + new Date(milestone?.endDate as number).toLocaleDateString()}
+            </Text>
+          </Stack>
+          <Text>{milestone.description || 'No Description'}</Text>
+
+          <Stack>
+            {milestone.documents?.map((doc, index) => {
+              if (doc.src) {
+                return (
+                  <OptionalLink
+                    enabled={true}
+                    href={doc?.src.replace('ipfs://', 'https://ipfs.io/ipfs/')}
+                  >
+                    {doc.type === 'ipfs'
+                      ? doc?.src.replace('ipfs://', 'https://ipfs.io/ipfs/')
+                      : doc.src}
+                  </OptionalLink>
+                )
+              }
+            })}
+          </Stack>
         </Stack>
       ),
     }
