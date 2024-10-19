@@ -1,4 +1,5 @@
 import { Box, Flex, Paragraph, atoms } from '@zoralabs/zord'
+import { toLower } from 'lodash'
 import Image from 'next/image'
 import React, { ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
@@ -12,10 +13,12 @@ import { SDK } from 'src/data/subgraph/client'
 import { Proposal } from 'src/data/subgraph/requests/proposalQuery'
 import { OrderDirection, Token_OrderBy } from 'src/data/subgraph/sdk.generated'
 import { useEnsData } from 'src/hooks/useEnsData'
+import { getEscrowBundler } from 'src/modules/create-proposal/components/TransactionForm/Escrow/EscrowUtils'
 import { useChainStore } from 'src/stores/useChainStore'
 import { propPageWrapper } from 'src/styles/Proposals.css'
 
 import { DecodedTransactions } from './DecodedTransactions'
+import { MilestoneDetails } from './MilestoneDetails'
 import { proposalDescription } from './ProposalDescription.css'
 
 const Section = ({ children, title }: { children: ReactNode; title: string }) => (
@@ -39,6 +42,8 @@ export const ProposalDescription: React.FC<ProposalDescriptionProps> = ({
   const { description, proposer, calldatas, values, targets } = proposal
   const { displayName } = useEnsData(proposer)
   const chain = useChainStore((x) => x.chain)
+
+  const isEscrow = targets.includes(toLower(getEscrowBundler(chain.id)))
 
   const { data: tokenImage, error } = useSWR(
     !!collection && !!proposer
@@ -72,6 +77,11 @@ export const ProposalDescription: React.FC<ProposalDescriptionProps> = ({
             )}
           </Paragraph>
         </Section>
+        {isEscrow && (
+          <Section title="Escrow Milestones">
+            <MilestoneDetails />
+          </Section>
+        )}
 
         <Section title="Proposer">
           <Flex direction={'row'} placeItems={'center'}>

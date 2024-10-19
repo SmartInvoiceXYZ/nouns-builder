@@ -74,3 +74,28 @@ export const EscrowFormSchema = yup.object({
     .of(MilestoneSchema)
     .min(1, 'At least one milestone is required'),
 })
+
+// IPFS Interface Interface
+
+export type Document = Partial<{
+  id: string
+  src: string
+  type: string
+  mimeType: string // image/png, application/pdf, etc.
+  createdAt: number
+}>
+
+export type BasicMetadata = Partial<{
+  version: string
+  id: string
+  title: string
+  description: string
+  image: Document
+  documents: Document[]
+  createdAt: number
+}>
+
+export type IpfsMilestone = Omit<BasicMetadata, 'version'> &
+  Partial<{
+    endDate: number
+  }>

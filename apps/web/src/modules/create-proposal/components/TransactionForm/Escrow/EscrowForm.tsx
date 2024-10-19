@@ -11,7 +11,6 @@ import { NUMBER, TEXT, TEXTAREA } from 'src/components/Fields/types'
 import Accordion from 'src/components/Home/accordian'
 import { Icon } from 'src/components/Icon'
 import SingleMediaUpload from 'src/components/SingleMediaUpload/SingleMediaUpload'
-import { useLayoutStore } from 'src/stores'
 
 import EscrowDetailsDisplay from './EscrowDetailsDisplay'
 import {
