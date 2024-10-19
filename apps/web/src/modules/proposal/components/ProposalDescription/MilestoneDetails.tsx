@@ -5,6 +5,7 @@ import {
   Hex,
   bytesToHex,
   decodeAbiParameters,
+  formatEther,
   hexToString,
   parseAbiParameters,
 } from 'viem'
@@ -47,9 +48,11 @@ export const MilestoneDetails = ({
     }
   )
 
-  const milestones: IpfsMilestone[] = invoiceData?.milestones
+  const milestoneAmount = decodedTxnData['_milestoneAmounts']['value']
+    .split(',')
+    .map((x) => formatEther(BigInt(x)))
 
-  console.log(milestones)
+  const milestones: IpfsMilestone[] = invoiceData?.milestones
 
   const milestonesDetails = milestones?.map((milestone, index) => {
     return {
@@ -62,7 +65,7 @@ export const MilestoneDetails = ({
         <Stack gap={'x5'}>
           <Stack direction={'row'} align={'center'} justify={'space-between'}>
             <Text variant="label-xs" color="tertiary">
-              {'Amount: ' + '0.00 ETH'}
+              {'Amount: ' + milestoneAmount[index] + ' ETH'}
             </Text>
             <Text variant="label-xs" color="tertiary">
               {'Due by: ' + new Date(milestone?.endDate as number).toLocaleDateString()}
