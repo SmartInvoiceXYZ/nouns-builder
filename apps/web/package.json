@@ -25,6 +25,7 @@
     "@types/tinycolor2": "^1.4.3",
     "@vanilla-extract/next-plugin": "^2.0.2",
     "@vanilla-extract/recipes": "^0.2.5",
+    "bs58": "^5.0.0",
     "@vercel/og": "^0.4.0",
     "@zoralabs/nouns-protocol": "1.2.0",
     "@zoralabs/zord": "workspace:*",

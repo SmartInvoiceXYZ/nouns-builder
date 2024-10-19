@@ -1,5 +1,6 @@
 import { Box, Flex, Stack, Text, atoms } from '@zoralabs/zord'
 import axios from 'axios'
+import { useEffect } from 'hono/jsx'
 import { toLower } from 'lodash'
 import React, { Fragment } from 'react'
 import useSWR from 'swr'
@@ -16,11 +17,14 @@ interface DecodedTransactionProps {
   targets: string[]
   calldatas: string[]
   values: string[]
+  setDecodedTxnData: React.Dispatch<React.SetStateAction<any>>
 }
+
 export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
   targets,
   calldatas,
   values,
+  setDecodedTxnData,
 }) => {
   const chain = useChainStore((x) => x.chain)
   const isEscrow = targets.includes(toLower(getEscrowBundler(chain.id)))
@@ -89,6 +93,8 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
             values[i]
           )
 
+          setDecodedTxnData(transaction?.args)
+
           return {
             target,
             transaction,
@@ -140,7 +146,6 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
                         `)`}
                     </Flex>
                     <Stack pl={'x4'} gap={'x1'}>
-                      {console.log(decoded?.transaction?.args)}
                       {(decoded?.transaction?.args &&
                         Object?.values(decoded?.transaction?.args).map((arg: any) => (
                           // if verified contract and arguments object {name, value}

@@ -1,4 +1,5 @@
-import { Address, encodeAbiParameters, toBytes, toHex } from 'viem'
+import { decode, encode } from 'bs58'
+import { Address, Hex, encodeAbiParameters } from 'viem'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
@@ -6,6 +7,18 @@ import { EscrowFormState, EscrowFormValues } from './EscrowForm.schema'
 
 const KLEROS_ARBITRATION_PROVIDER =
   '0x18542245cA523DFF96AF766047fE9423E0BED3C0' as Address
+
+export function convertIpfsCidV0ToByte32(cid: string) {
+  return `0x${Buffer.from(decode(cid).slice(2)).toString('hex')}`
+}
+
+export function convertByte32ToIpfsCidV0(str: Hex) {
+  let newStr: string = str
+  if (str.indexOf('0x') === 0) {
+    newStr = str.slice(2)
+  }
+  return encode(Buffer.from(`1220${newStr}`, 'hex'))
+}
 
 function getWrappedTokenAddress(chainId: number | string): Address {
   chainId = Number(chainId)
@@ -47,7 +60,18 @@ function createEscrowData(
 ) {
   const warappedTokenAddress = getWrappedTokenAddress(chainId)
   const terminationTime = new Date(values.safetyValveDate).getTime()
-  const ipfsBytesCid = toHex(toBytes('ipfsCID', { size: 32 }))
+  const ipfsBytesCid = convertIpfsCidV0ToByte32(ipfsCID)
+
+  console.log([
+    values.clientAddress,
+    KLEROS_ARBITRATION_PROVIDER,
+    warappedTokenAddress,
+    terminationTime,
+    ipfsBytesCid,
+    values.recipientAddress,
+    values.recipientAddress,
+  ])
+
   const encodedParams = encodeAbiParameters(
     ['address', 'address', 'address', 'uint256', 'bytes32', 'address', 'address'].map(
       (type) => ({ type })
