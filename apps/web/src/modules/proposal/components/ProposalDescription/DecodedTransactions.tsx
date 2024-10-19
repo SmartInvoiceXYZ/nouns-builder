@@ -136,15 +136,25 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
                         !isEscrow ? decoded?.transaction?.functionName : 'deployEscrow'
                       }(`}
                       {!decoded?.transaction?.args &&
-                        !decoded.transaction.decoded.length &&
+                        !decoded.transaction?.decoded?.length &&
                         `)`}
                     </Flex>
                     <Stack pl={'x4'} gap={'x1'}>
+                      {console.log(decoded?.transaction?.args)}
                       {(decoded?.transaction?.args &&
                         Object?.values(decoded?.transaction?.args).map((arg: any) => (
                           // if verified contract and arguments object {name, value}
+
                           <Flex key={arg?.name}>
-                            {arg?.name}: {arg?.value}
+                            {arg?.name}:{' '}
+                            {arg?.name === '_milestoneAmounts'
+                              ? arg.value
+                                  .split(',')
+                                  .map((amt: string) => `${formatEther(BigInt(amt))} ETH`)
+                                  .join(', ')
+                              : arg?.name === '_fundAmount'
+                              ? formatEther(BigInt(arg?.value)) + ' ETH'
+                              : arg?.value}
                           </Flex>
                         ))) ||
                         // if unverified contract and arguments array [value]
@@ -154,7 +164,7 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
                           )))}
                     </Stack>
                     {(!!decoded?.transaction?.args ||
-                      !!decoded?.transaction.decoded.length) &&
+                      !!decoded?.transaction?.decoded?.length) &&
                       `)`}
                   </Stack>
                 </Stack>
