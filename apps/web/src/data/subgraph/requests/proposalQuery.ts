@@ -15,6 +15,7 @@ export interface Proposal
   extends Omit<ProposalFragment, 'executableFrom' | 'expiresAt' | 'calldatas'> {
   calldatas: string[]
   state: ProposalState
+  executionTransactionHash?: string
   executableFrom?: number
   expiresAt?: number
   votes?: ProposalVote[]

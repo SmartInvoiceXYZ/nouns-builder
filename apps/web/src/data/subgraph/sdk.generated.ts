@@ -1099,6 +1099,7 @@ export type Proposal = {
   description?: Maybe<Scalars['String']>
   descriptionHash: Scalars['Bytes']
   executableFrom?: Maybe<Scalars['BigInt']>
+  executionTransactionHash?: Maybe<Scalars['String']>
   executed: Scalars['Boolean']
   expiresAt?: Maybe<Scalars['BigInt']>
   forVotes: Scalars['Int']

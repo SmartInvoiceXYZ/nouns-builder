@@ -1,18 +1,11 @@
 import { Button, Stack, Text } from '@zoralabs/zord'
 import axios from 'axios'
 import useSWR from 'swr'
-import {
-  Hex,
-  bytesToHex,
-  decodeAbiParameters,
-  formatEther,
-  hexToString,
-  parseAbiItem,
-  parseAbiParameters,
-} from 'viem'
+import { Hex, decodeAbiParameters, formatEther, parseAbiParameters } from 'viem'
 import { useContractRead } from 'wagmi'
 
 import Accordion from 'src/components/Home/accordian'
+import { Icon } from 'src/components/Icon'
 import { OptionalLink } from 'src/components/OptionalLink'
 import SWR_KEYS from 'src/constants/swrKeys'
 import { IpfsMilestone } from 'src/modules/create-proposal/components/TransactionForm/Escrow/EscrowForm.schema'
@@ -121,12 +114,12 @@ export const MilestoneDetails = ({
             })}
           </Stack>
           {/* TODO: implement create new release proposal when client is DAO */}
-          {/* TODO: Openin Safe / Redirect to SI app when multisig is client */}
+          {/* TODO: Open in Safe / Redirect to SI app when multisig is client */}
           {Number(numOfMilestonesReleased?.toString()) === index ? (
             <Button>Release Milestone</Button>
           ) : (
             <Button variant="secondary" disabled>
-              Release Milestone
+              <Icon id="check" /> Milestone Released
             </Button>
           )}
         </Stack>
