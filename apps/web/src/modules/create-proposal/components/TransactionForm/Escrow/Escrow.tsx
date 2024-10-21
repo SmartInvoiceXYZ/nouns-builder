@@ -116,7 +116,6 @@ export const Escrow: React.FC = () => {
       const escrowData = createEscrowData(values, ipfsCID, chainId)
       const milestoneAmounts = values.milestones.map((x) => x.amount * 10 ** 18)
       const fundAmount = milestoneAmounts.reduce((acc, x) => acc + x, 0)
-      console.log([milestoneAmounts, escrowData, String(fundAmount).length])
 
       const escrow = {
         target: getEscrowBundler(chainId),

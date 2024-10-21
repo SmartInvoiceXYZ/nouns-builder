@@ -14,6 +14,7 @@ export enum TransactionType {
   UPDATE_MINTER = 'update-minter',
   REPLACE_ARTWORK = 'replace-artwork',
   MIGRATION = 'migration',
+  RELEASE_ESCROW_MILESTONE = 'release-milestone',
 }
 
 export interface TransactionTypeProps {

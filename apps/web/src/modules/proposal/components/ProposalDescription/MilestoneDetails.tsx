@@ -1,18 +1,43 @@
 import { Button, Stack, Text } from '@zoralabs/zord'
 import axios from 'axios'
+import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import { Hex, decodeAbiParameters, formatEther, parseAbiParameters } from 'viem'
+import {
+  Hex,
+  decodeAbiParameters,
+  encodeFunctionData,
+  formatEther,
+  parseAbiParameters,
+} from 'viem'
 import { useContractRead } from 'wagmi'
 
 import Accordion from 'src/components/Home/accordian'
-import { Icon } from 'src/components/Icon'
 import { OptionalLink } from 'src/components/OptionalLink'
 import SWR_KEYS from 'src/constants/swrKeys'
+import { TransactionType } from 'src/modules/create-proposal'
 import { IpfsMilestone } from 'src/modules/create-proposal/components/TransactionForm/Escrow/EscrowForm.schema'
 import { convertByte32ToIpfsCidV0 } from 'src/modules/create-proposal/components/TransactionForm/Escrow/EscrowUtils'
+import { useProposalStore } from 'src/modules/create-proposal/stores'
 import { useChainStore } from 'src/stores/useChainStore'
+import { AddressType } from 'src/typings'
 
 import { DecodedTransaction } from './ProposalDescription'
+
+const releaseFunctionAbi = [
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '_milestone',
+        type: 'uint256',
+      },
+    ],
+    name: 'release',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+]
 
 export const MilestoneDetails = ({
   decodedTxnData,
@@ -35,9 +60,12 @@ export const MilestoneDetails = ({
     decodedTxnData?._escrowData?.value as Hex
   )
 
-  const { chain: invoiceChain } = useChainStore()
+  const router = useRouter()
 
-  console.log({ executionTransactionHash })
+  const transactions = useProposalStore((state) => state.transactions)
+  const removeTransactions = useProposalStore((state) => state.removeAllTransactions)
+  const { chain: invoiceChain } = useChainStore()
+  const addTransaction = useProposalStore((state) => state.addTransaction)
 
   const invoiceAddress = `0x39f74e876f4c5c8a8e16ad2f543a3e89c3f7d784` // TODO: Get this dynamically from execution txn hash
   const invoiceCid = convertByte32ToIpfsCidV0((decodedAbiData as never)?.[4])
@@ -78,8 +106,38 @@ export const MilestoneDetails = ({
   })
 
   const handleReleaseMilestone = async (index: number) => {
-    // TODO: Implement release milestone
-    console.log(`Milestone ${index} release attempted`)
+    // clear up existing txns
+    removeTransactions()
+
+    const releaseMilestone = {
+      target: invoiceAddress as AddressType,
+      functionSignature: 'release(_milestone)',
+      calldata: encodeFunctionData({
+        abi: releaseFunctionAbi,
+        functionName: 'release',
+        args: [index],
+      }),
+      value: '',
+    }
+
+    const releaseEscrowTxnData = {
+      type: TransactionType.RELEASE_ESCROW_MILESTONE,
+      summary: `Release Milestone #${index + 1} for ${invoiceData?.title}`,
+      transactions: [releaseMilestone],
+    }
+
+    addTransaction(releaseEscrowTxnData)
+
+    // send user to review stage
+    setTimeout(() => {
+      router.push({
+        pathname: `/dao/[network]/[token]/proposal/review`,
+        query: {
+          network: router.query?.network,
+          token: router.query?.token,
+        },
+      })
+    }, 1000)
   }
 
   const milestonesDetails = milestones?.map((milestone, index) => {
@@ -119,10 +177,12 @@ export const MilestoneDetails = ({
           {/* TODO: implement create new release proposal when client is DAO */}
           {/* TODO: Open in Safe / Redirect to SI app when multisig is client */}
           {Number(numOfMilestonesReleased?.toString()) === index ? (
-            <Button>Release Milestone</Button>
+            <Button onClick={() => handleReleaseMilestone(index)}>
+              Release Milestone
+            </Button>
           ) : (
             <Button variant="secondary" disabled>
-              <Icon id="check" /> Milestone Released
+              Release Milestone
             </Button>
           )}
         </Stack>
