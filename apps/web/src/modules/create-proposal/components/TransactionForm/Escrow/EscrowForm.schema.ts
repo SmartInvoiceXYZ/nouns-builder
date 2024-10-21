@@ -59,21 +59,35 @@ export const MilestoneSchema = yup.object({
   description: yup.string(),
 })
 
-export const EscrowFormSchema = yup.object({
-  clientAddress: addressValidationSchema,
-  recipientAddress: addressValidationSchema,
-  safetyValveDate: yup
-    .date()
-    .required('Safety valve date is required.')
-    .min(
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      'Safety valve date must be at least 30 days from today.'
+export const EscrowFormSchema = yup
+  .object({
+    clientAddress: addressValidationSchema,
+    recipientAddress: addressValidationSchema.test(
+      'not-same-as-client',
+      'Recipient address must be different from client address',
+      function (value) {
+        return value !== this.parent.clientAddress
+      }
     ),
-  milestones: yup
-    .array()
-    .of(MilestoneSchema)
-    .min(1, 'At least one milestone is required'),
-})
+    safetyValveDate: yup
+      .date()
+      .required('Safety valve date is required.')
+      .min(
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        'Safety valve date must be at least 30 days from today.'
+      ),
+    milestones: yup
+      .array()
+      .of(MilestoneSchema)
+      .min(1, 'At least one milestone is required'),
+  })
+  .test(
+    'addresses-not-same',
+    'Client address and recipient address must be different',
+    function (values) {
+      return values.clientAddress !== values.recipientAddress
+    }
+  )
 
 // IPFS Interface Interface
 
