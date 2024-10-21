@@ -62,7 +62,6 @@ export const MilestoneDetails = ({
 
   const router = useRouter()
 
-  const transactions = useProposalStore((state) => state.transactions)
   const removeTransactions = useProposalStore((state) => state.removeAllTransactions)
   const { chain: invoiceChain } = useChainStore()
   const addTransaction = useProposalStore((state) => state.addTransaction)

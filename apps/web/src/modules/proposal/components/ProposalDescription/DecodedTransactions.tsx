@@ -140,6 +140,8 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
                       {`.${
                         !isEscrow ? decoded?.transaction?.functionName : 'deployEscrow'
                       }(`}
+                      {decoded?.transaction?.functionName === 'release' &&
+                        `Milestone: ${Number(decoded?.transaction?.decoded[0]) + 1}`}
                       {!decoded?.transaction?.args &&
                         !decoded.transaction?.decoded?.length &&
                         `)`}
@@ -164,7 +166,7 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
                         // if unverified contract and arguments array [value]
                         (decoded?.transaction?.decoded &&
                           decoded?.transaction?.decoded?.map((arg: any) => (
-                            <Flex key={arg}>{arg}</Flex>
+                            <Flex key={arg}>{arg} </Flex>
                           )))}
                     </Stack>
                     {(!!decoded?.transaction?.args ||
