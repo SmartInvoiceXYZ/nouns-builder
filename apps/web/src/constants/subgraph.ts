@@ -6,7 +6,9 @@ export const PUBLIC_SUBGRAPH_URL = {
   [CHAIN_ID.OPTIMISM]:
     'https://api.goldsky.com/api/public/project_clkk1ucdyf6ak38svcatie9tf/subgraphs/nouns-builder-optimism-mainnet/stable/gn',
   [CHAIN_ID.SEPOLIA]:
-    'https://api.goldsky.com/api/public/project_clkk1ucdyf6ak38svcatie9tf/subgraphs/nouns-builder-sepolia-testnet/stable/gn',
+    // TODO: Update to the main subgraph
+    //'https://api.goldsky.com/api/public/project_clkk1ucdyf6ak38svcatie9tf/subgraphs/nouns-builder-sepolia-testnet/stable/gn',
+    'https://api.goldsky.com/api/public/project_cm2itwou5aapv01we2n0q698q/subgraphs/nouns-builder-sepolia/1.0.0/gn',
   [CHAIN_ID.OPTIMISM_SEPOLIA]:
     'https://api.goldsky.com/api/public/project_clkk1ucdyf6ak38svcatie9tf/subgraphs/nouns-builder-optimism-sepolia/stable/gn',
   [CHAIN_ID.BASE]:
