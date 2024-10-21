@@ -12,7 +12,10 @@ import {
 import { CHAIN_ID } from 'src/typings'
 
 export interface Proposal
-  extends Omit<ProposalFragment, 'executableFrom' | 'expiresAt' | 'calldatas'> {
+  extends Omit<
+    ProposalFragment,
+    'executableFrom' | 'expiresAt' | 'calldatas' | 'executionTransactionHash'
+  > {
   calldatas: string[]
   state: ProposalState
   executionTransactionHash?: string
@@ -22,7 +25,8 @@ export interface Proposal
 }
 
 export const formatAndFetchState = async (chainId: CHAIN_ID, data: ProposalFragment) => {
-  const { executableFrom, expiresAt, calldatas, ...proposal } = data
+  const { executableFrom, expiresAt, calldatas, executionTransactionHash, ...proposal } =
+    data
 
   const baseProposal = {
     ...proposal,
@@ -40,6 +44,7 @@ export const formatAndFetchState = async (chainId: CHAIN_ID, data: ProposalFragm
       ...baseProposal,
       executableFrom,
       expiresAt,
+      executionTransactionHash,
     }
   }
   return baseProposal

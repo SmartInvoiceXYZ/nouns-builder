@@ -4,7 +4,7 @@ import { uploadFile } from 'ipfs-service'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import useSWR from 'swr'
-import { Address, encodeFunctionData } from 'viem'
+import { encodeFunctionData } from 'viem'
 
 import SWR_KEYS from 'src/constants/swrKeys'
 import { ProposalsResponse } from 'src/data/subgraph/requests/proposalsQuery'

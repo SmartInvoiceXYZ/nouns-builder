@@ -2240,6 +2240,7 @@ export type ProposalFragment = {
   description?: string | null
   descriptionHash: any
   executableFrom?: any | null
+  executionTransactionHash?: any | null
   expiresAt?: any | null
   forVotes: number
   proposalId: any
@@ -2553,6 +2554,7 @@ export type ProposalQuery = {
     description?: string | null
     descriptionHash: any
     executableFrom?: any | null
+    executionTransactionHash?: any | null
     expiresAt?: any | null
     forVotes: number
     proposalId: any
@@ -2645,6 +2647,7 @@ export type ProposalsQuery = {
     description?: string | null
     descriptionHash: any
     executableFrom?: any | null
+    executionTransactionHash?: any | null
     expiresAt?: any | null
     forVotes: number
     proposalId: any
@@ -2801,6 +2804,7 @@ export const ProposalFragmentDoc = gql`
     description
     descriptionHash
     executableFrom
+    executionTransactionHash
     expiresAt
     forVotes
     proposalId

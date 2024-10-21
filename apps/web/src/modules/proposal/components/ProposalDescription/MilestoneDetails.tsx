@@ -10,15 +10,16 @@ import { OptionalLink } from 'src/components/OptionalLink'
 import SWR_KEYS from 'src/constants/swrKeys'
 import { IpfsMilestone } from 'src/modules/create-proposal/components/TransactionForm/Escrow/EscrowForm.schema'
 import { convertByte32ToIpfsCidV0 } from 'src/modules/create-proposal/components/TransactionForm/Escrow/EscrowUtils'
-import { ExternalLinks } from 'src/modules/dao/components/About/ExternalLinks'
 import { useChainStore } from 'src/stores/useChainStore'
 
 import { DecodedTransaction } from './ProposalDescription'
 
 export const MilestoneDetails = ({
   decodedTxnData,
+  executionTransactionHash,
 }: {
   decodedTxnData: DecodedTransaction
+  executionTransactionHash?: string
 }) => {
   // Decode Calldata to get ipfs CID
   const decodedAbiData = decodeAbiParameters(
@@ -35,6 +36,8 @@ export const MilestoneDetails = ({
   )
 
   const { chain: invoiceChain } = useChainStore()
+
+  console.log({ executionTransactionHash })
 
   const invoiceAddress = `0x39f74e876f4c5c8a8e16ad2f543a3e89c3f7d784` // TODO: Get this dynamically from execution txn hash
   const invoiceCid = convertByte32ToIpfsCidV0((decodedAbiData as never)?.[4])

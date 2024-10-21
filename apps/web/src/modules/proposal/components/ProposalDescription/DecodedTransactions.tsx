@@ -1,6 +1,5 @@
 import { Box, Flex, Stack, Text, atoms } from '@zoralabs/zord'
 import axios from 'axios'
-import { useEffect } from 'hono/jsx'
 import { toLower } from 'lodash'
 import React, { Fragment } from 'react'
 import useSWR from 'swr'
