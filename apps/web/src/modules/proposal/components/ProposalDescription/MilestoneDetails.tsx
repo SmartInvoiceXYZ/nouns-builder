@@ -173,17 +173,17 @@ export const MilestoneDetails = ({
               }
             })}
           </Stack>
-          {/* TODO: implement create new release proposal when client is DAO */}
-          {/* TODO: Open in Safe / Redirect to SI app when multisig is client */}
-          {Number(numOfMilestonesReleased?.toString()) === index ? (
-            <Button onClick={() => handleReleaseMilestone(index)}>
-              Release Milestone
-            </Button>
-          ) : (
-            <Button variant="secondary" disabled>
-              Release Milestone
-            </Button>
-          )}
+
+          {executionTransactionHash &&
+            (Number(numOfMilestonesReleased?.toString()) === index ? (
+              <Button onClick={() => handleReleaseMilestone(index)}>
+                Release Milestone
+              </Button>
+            ) : (
+              <Button variant="secondary" disabled>
+                Release Milestone
+              </Button>
+            ))}
         </Stack>
       ),
     }
