@@ -59,21 +59,56 @@ export const MilestoneSchema = yup.object({
   description: yup.string(),
 })
 
-export const EscrowFormSchema = yup.object({
-  clientAddress: addressValidationSchema,
-  recipientAddress: addressValidationSchema,
-  safetyValveDate: yup
-    .date()
-    .required('Safety valve date is required.')
-    .min(
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      'Safety valve date must be at least 30 days from today.'
+export const EscrowFormSchema = yup
+  .object({
+    clientAddress: addressValidationSchema,
+    recipientAddress: addressValidationSchema.test(
+      'not-same-as-client',
+      'Recipient address must be different from client address',
+      function (value) {
+        return value?.toLowerCase() !== this?.parent.clientAddress.toLowerCase()
+      }
     ),
-  milestones: yup
-    .array()
-    .of(MilestoneSchema)
-    .min(1, 'At least one milestone is required'),
-})
+    safetyValveDate: yup
+      .date()
+      .required('Safety valve date is required.')
+      .min(
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        'Safety valve date must be at least 30 days from today.'
+      )
+      .test(
+        'after-last-milestone',
+        'Safety valve date must be at least 30 days after the last milestone date',
+        function (value) {
+          const milestones = (this.parent.milestones || []) as Milestone[]
+          if (milestones.length === 0) return true
+
+          // Get the last milestone's end date
+          const lastMilestoneDate = new Date(
+            Math.max(...milestones.map((m) => new Date(m.endDate).getTime()))
+          )
+
+          // Add 30 days to last milestone date
+          const minSafetyValveDate =
+            lastMilestoneDate.getTime() + 30 * 24 * 60 * 60 * 1000
+
+          const safetyValveDate = new Date(value as any).getTime()
+
+          return safetyValveDate >= minSafetyValveDate
+        }
+      ),
+    milestones: yup
+      .array()
+      .of(MilestoneSchema)
+      .min(1, 'At least one milestone is required'),
+  })
+  .test(
+    'addresses-not-same',
+    'Client address and recipient address must be different',
+    function (values) {
+      return values.clientAddress !== values.recipientAddress
+    }
+  )
 
 // IPFS Interface Interface
 

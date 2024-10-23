@@ -51,7 +51,8 @@ export const ProposalDescription: React.FC<ProposalDescriptionProps> = ({
   proposal,
   collection,
 }) => {
-  const { description, proposer, calldatas, values, targets } = proposal
+  const { description, proposer, calldatas, values, targets, executionTransactionHash } =
+    proposal
   const { displayName } = useEnsData(proposer)
   const chain = useChainStore((x) => x.chain)
 
@@ -97,7 +98,10 @@ export const ProposalDescription: React.FC<ProposalDescriptionProps> = ({
         </Section>
         {isEscrow && decodedTxnData && (
           <Section title="Escrow Milestones">
-            <MilestoneDetails decodedTxnData={decodedTxnData} />
+            <MilestoneDetails
+              decodedTxnData={decodedTxnData}
+              executionTransactionHash={executionTransactionHash}
+            />
           </Section>
         )}
 

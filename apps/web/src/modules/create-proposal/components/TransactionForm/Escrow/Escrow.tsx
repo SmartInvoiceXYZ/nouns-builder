@@ -4,7 +4,7 @@ import { uploadFile } from 'ipfs-service'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import useSWR from 'swr'
-import { Address, encodeFunctionData } from 'viem'
+import { encodeFunctionData } from 'viem'
 
 import SWR_KEYS from 'src/constants/swrKeys'
 import { ProposalsResponse } from 'src/data/subgraph/requests/proposalsQuery'
@@ -116,7 +116,6 @@ export const Escrow: React.FC = () => {
       const escrowData = createEscrowData(values, ipfsCID, chainId)
       const milestoneAmounts = values.milestones.map((x) => x.amount * 10 ** 18)
       const fundAmount = milestoneAmounts.reduce((acc, x) => acc + x, 0)
-      console.log([milestoneAmounts, escrowData, String(fundAmount).length])
 
       const escrow = {
         target: getEscrowBundler(chainId),

@@ -62,16 +62,7 @@ function createEscrowData(
   const terminationTime = new Date(values.safetyValveDate).getTime()
   const ipfsBytesCid = convertIpfsCidV0ToByte32(ipfsCID)
 
-  console.log([
-    values.clientAddress,
-    KLEROS_ARBITRATION_PROVIDER,
-    warappedTokenAddress,
-    terminationTime,
-    ipfsBytesCid,
-    values.recipientAddress,
-    values.recipientAddress,
-  ])
-
+  // encode abi parameters to create escrowData
   const encodedParams = encodeAbiParameters(
     ['address', 'address', 'address', 'uint256', 'bytes32', 'address', 'address'].map(
       (type) => ({ type })
