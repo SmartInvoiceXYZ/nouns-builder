@@ -195,7 +195,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
                     'The wallet address to which funds will be released on milestone completions.'
                   }
                 />
-                {multiSig && (
+                {!multiSig && (
                   <SmartInput
                     type={TEXT}
                     formik={formik}
