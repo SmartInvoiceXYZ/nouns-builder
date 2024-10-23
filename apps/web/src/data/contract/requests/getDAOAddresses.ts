@@ -5,6 +5,7 @@ import { AddressType, CHAIN_ID } from 'src/typings'
 import { unpackOptionalArray } from 'src/utils/helpers'
 
 import { managerAbi } from '../abis'
+import { getDaoMultiSig } from './getDAOMultisig'
 
 const getDAOAddresses = async (chainId: CHAIN_ID, tokenAddress: AddressType) => {
   const addresses = await readContract({
@@ -17,8 +18,19 @@ const getDAOAddresses = async (chainId: CHAIN_ID, tokenAddress: AddressType) => 
 
   const [metadata, auction, treasury, governor] = unpackOptionalArray(addresses, 4)
 
+  const multiSig = await getDaoMultiSig(governor as AddressType, chainId)
+
   const hasMissingAddresses = Object.values(addresses).includes(NULL_ADDRESS)
   if (hasMissingAddresses) return null
+
+  console.log({
+    token: tokenAddress,
+    auction,
+    governor,
+    metadata,
+    treasury,
+    multiSig,
+  })
 
   return {
     token: tokenAddress,
@@ -26,6 +38,7 @@ const getDAOAddresses = async (chainId: CHAIN_ID, tokenAddress: AddressType) => 
     governor,
     metadata,
     treasury,
+    multiSig,
   }
 }
 
