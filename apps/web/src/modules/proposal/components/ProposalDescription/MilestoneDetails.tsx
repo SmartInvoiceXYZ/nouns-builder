@@ -47,7 +47,7 @@ const RELEASE_FUNCTION_ABI = [
 ]
 
 // Constants
-const INVOICE_ADDRESS = '0x39f74e876f4c5c8a8e16ad2f543a3e89c3f7d784' // TODO: Get dynamically
+const INVOICE_ADDRESS = '0x39f74e876f4c5c8a8e16ad2f543a3e89c3f7d784' // TODO: Get dynamically from execTxnHash
 const SAFE_APP_URL =
   'https://app.safe.global/share/safe-app?appUrl=https://app.smartinvoice.xyz/invoices'
 

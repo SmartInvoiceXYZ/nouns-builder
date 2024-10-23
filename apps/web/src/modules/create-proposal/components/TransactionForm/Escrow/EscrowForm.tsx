@@ -12,7 +12,6 @@ import Accordion from 'src/components/Home/accordian'
 import { Icon } from 'src/components/Icon'
 import SingleMediaUpload from 'src/components/SingleMediaUpload/SingleMediaUpload'
 import { useDaoStore } from 'src/modules/dao'
-import { AddressType } from 'src/typings'
 
 import EscrowDetailsDisplay from './EscrowDetailsDisplay'
 import {

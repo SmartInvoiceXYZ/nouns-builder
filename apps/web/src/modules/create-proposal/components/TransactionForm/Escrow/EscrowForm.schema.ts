@@ -66,7 +66,7 @@ export const EscrowFormSchema = yup
       'not-same-as-client',
       'Recipient address must be different from client address',
       function (value) {
-        return value !== this.parent.clientAddress
+        return value?.toLowerCase() !== this?.parent.clientAddress.toLowerCase()
       }
     ),
     safetyValveDate: yup
@@ -75,6 +75,27 @@ export const EscrowFormSchema = yup
       .min(
         new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         'Safety valve date must be at least 30 days from today.'
+      )
+      .test(
+        'after-last-milestone',
+        'Safety valve date must be at least 30 days after the last milestone date',
+        function (value) {
+          const milestones = (this.parent.milestones || []) as Milestone[]
+          if (milestones.length === 0) return true
+
+          // Get the last milestone's end date
+          const lastMilestoneDate = new Date(
+            Math.max(...milestones.map((m) => new Date(m.endDate).getTime()))
+          )
+
+          // Add 30 days to last milestone date
+          const minSafetyValveDate =
+            lastMilestoneDate.getTime() + 30 * 24 * 60 * 60 * 1000
+
+          const safetyValveDate = new Date(value as any).getTime()
+
+          return safetyValveDate >= minSafetyValveDate
+        }
       ),
     milestones: yup
       .array()
