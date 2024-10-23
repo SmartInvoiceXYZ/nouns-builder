@@ -7,6 +7,7 @@ import {
   decodeAbiParameters,
   encodeFunctionData,
   formatEther,
+  isAddressEqual,
   parseAbiParameters,
 } from 'viem'
 import { useContractRead } from 'wagmi'
@@ -18,6 +19,7 @@ import { TransactionType } from 'src/modules/create-proposal'
 import { IpfsMilestone } from 'src/modules/create-proposal/components/TransactionForm/Escrow/EscrowForm.schema'
 import { convertByte32ToIpfsCidV0 } from 'src/modules/create-proposal/components/TransactionForm/Escrow/EscrowUtils'
 import { useProposalStore } from 'src/modules/create-proposal/stores'
+import { useDaoStore } from 'src/modules/dao'
 import { useChainStore } from 'src/stores/useChainStore'
 import { AddressType } from 'src/typings'
 
@@ -64,6 +66,7 @@ export const MilestoneDetails = ({
 
   const removeTransactions = useProposalStore((state) => state.removeAllTransactions)
   const { chain: invoiceChain } = useChainStore()
+  const { addresses } = useDaoStore()
   const addTransaction = useProposalStore((state) => state.addTransaction)
 
   const invoiceAddress = `0x39f74e876f4c5c8a8e16ad2f543a3e89c3f7d784` // TODO: Get this dynamically from execution txn hash
@@ -105,38 +108,49 @@ export const MilestoneDetails = ({
   })
 
   const handleReleaseMilestone = async (index: number) => {
-    // clear up existing txns
-    removeTransactions()
+    console.log({ addresses })
 
-    const releaseMilestone = {
-      target: invoiceAddress as AddressType,
-      functionSignature: 'release(_milestone)',
-      calldata: encodeFunctionData({
-        abi: releaseFunctionAbi,
-        functionName: 'release',
-        args: [index],
-      }),
-      value: '',
+    // todo: check for multiSig being equal to client address on decoded invoice data
+    if (
+      isAddressEqual(addresses.multiSig as AddressType, addresses.governor as AddressType)
+    ) {
+      // clear up existing txns
+      removeTransactions()
+
+      const releaseMilestone = {
+        target: invoiceAddress as AddressType,
+        functionSignature: 'release(_milestone)',
+        calldata: encodeFunctionData({
+          abi: releaseFunctionAbi,
+          functionName: 'release',
+          args: [index],
+        }),
+        value: '',
+      }
+
+      const releaseEscrowTxnData = {
+        type: TransactionType.RELEASE_ESCROW_MILESTONE,
+        summary: `Release Milestone #${index + 1} for ${invoiceData?.title}`,
+        transactions: [releaseMilestone],
+      }
+
+      addTransaction(releaseEscrowTxnData)
+
+      // send user to review stage
+      setTimeout(() => {
+        router.push({
+          pathname: `/dao/[network]/[token]/proposal/review`,
+          query: {
+            network: router.query?.network,
+            token: router.query?.token,
+          },
+        })
+      }, 1000)
+    } else {
+      router.replace(
+        'https://app.safe.global/share/safe-app?appUrl=https://app.smartinvoice.xyz/invoices'
+      )
     }
-
-    const releaseEscrowTxnData = {
-      type: TransactionType.RELEASE_ESCROW_MILESTONE,
-      summary: `Release Milestone #${index + 1} for ${invoiceData?.title}`,
-      transactions: [releaseMilestone],
-    }
-
-    addTransaction(releaseEscrowTxnData)
-
-    // send user to review stage
-    setTimeout(() => {
-      router.push({
-        pathname: `/dao/[network]/[token]/proposal/review`,
-        query: {
-          network: router.query?.network,
-          token: router.query?.token,
-        },
-      })
-    }, 1000)
   }
 
   const milestonesDetails = milestones?.map((milestone, index) => {
@@ -175,15 +189,15 @@ export const MilestoneDetails = ({
           </Stack>
 
           {executionTransactionHash &&
-            (Number(numOfMilestonesReleased?.toString()) === index ? (
-              <Button onClick={() => handleReleaseMilestone(index)}>
-                Release Milestone
-              </Button>
-            ) : (
-              <Button variant="secondary" disabled>
-                Release Milestone
-              </Button>
-            ))}
+          Number(numOfMilestonesReleased?.toString()) === index ? (
+            <Button onClick={() => handleReleaseMilestone(index)}>
+              Release Milestone
+            </Button>
+          ) : (
+            <Button variant="secondary" disabled>
+              Release Milestone
+            </Button>
+          )}
         </Stack>
       ),
     }

@@ -1,17 +1,24 @@
 import axios from 'axios'
-import useSWR from 'swr'
 import { Address, checksumAddress, isAddress } from 'viem'
 
-import SWR_KEYS from 'src/constants/swrKeys'
 import { AddressType, CHAIN_ID } from 'src/typings'
 
 interface AttestationResponse {
   data: {
-    attestations: {
+    attestations: Array<{
       attester: string
       recipient: string
       decodedDataJson: string
-    }[]
+    }>
+  }
+}
+
+interface DecodedData {
+  name: string
+  type: string
+  value: {
+    type: string
+    value: string
   }
 }
 
@@ -34,22 +41,25 @@ export async function getDaoMultiSig(
   daoAddress: string,
   chainId: CHAIN_ID
 ): Promise<string | null> {
-  if (
-    !daoAddress ||
-    !isAddress(daoAddress) ||
-    !Object.keys(ATTESTATION_URL).includes(String(chainId)) ||
-    !ATTESTATION_URL[chainId]
-  ) {
+  // Input validation
+  if (!daoAddress || !isAddress(daoAddress)) {
+    return null
+  }
+
+  const attestationUrl = ATTESTATION_URL[chainId]
+  if (!attestationUrl) {
     return null
   }
 
   const query = `
     query Attestations {
-      attestations(where: {
-        schemaId: { equals: ${ATTESTATION_SCHEMA_UID} },
-        attester: { equals: ${checksumAddress(ATTESTATION_ISSUER)} },
-        recipient: { equals: "${checksumAddress(daoAddress)}" }
-      }) {
+      attestations(
+        where: {
+          schemaId: { equals: "${ATTESTATION_SCHEMA_UID}" }
+          attester: { equals: "${checksumAddress(ATTESTATION_ISSUER)}" }
+          recipient: { equals: "${checksumAddress(daoAddress)}" }
+        }
+      ) {
         attester
         recipient
         decodedDataJson
@@ -59,7 +69,7 @@ export async function getDaoMultiSig(
 
   try {
     const response = await axios.post<AttestationResponse>(
-      ATTESTATION_URL[chainId],
+      attestationUrl,
       { query },
       {
         headers: {
@@ -68,19 +78,22 @@ export async function getDaoMultiSig(
       }
     )
 
-    const { data } = response.data
-
-    if (!data?.attestations?.length) {
+    const attestations = response?.data?.data?.attestations
+    if (!attestations?.length) {
       return null
     }
 
     try {
-      const decodedData = JSON.parse(data.attestations[0].decodedDataJson)
+      const decodedData = JSON.parse(attestations[0].decodedDataJson) as DecodedData[]
 
-      // return multisig Address
-      return (decodedData[0]?.value?.value as string) || null
+      const multisigAddress = decodedData[0]?.value?.value
+      if (!multisigAddress || !isAddress(multisigAddress)) {
+        return null
+      }
+
+      return multisigAddress
     } catch (parseError) {
-      console.error('Error parsing decodedDataJson:', parseError)
+      console.error('Error parsing attestation data:', parseError)
       return null
     }
   } catch (error) {
