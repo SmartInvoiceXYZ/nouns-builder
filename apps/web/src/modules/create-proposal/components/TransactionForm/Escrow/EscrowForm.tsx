@@ -11,6 +11,8 @@ import { NUMBER, TEXT, TEXTAREA } from 'src/components/Fields/types'
 import Accordion from 'src/components/Home/accordian'
 import { Icon } from 'src/components/Icon'
 import SingleMediaUpload from 'src/components/SingleMediaUpload/SingleMediaUpload'
+import { useDaoStore } from 'src/modules/dao'
+import { AddressType } from 'src/typings'
 
 import EscrowDetailsDisplay from './EscrowDetailsDisplay'
 import {
@@ -120,6 +122,9 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
   const [isMediaUploading, setIsMediaUploading] = useState(false)
 
   const { formValues, setFormValues } = useEscrowFormStore()
+  const {
+    addresses: { multiSig, governor },
+  } = useDaoStore()
 
   const handleSubmit = useCallback(
     (values: EscrowFormValues, actions: FormikHelpers<EscrowFormValues>) => {
@@ -153,7 +158,10 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
   return (
     <Box>
       <Formik
-        initialValues={formValues}
+        initialValues={{
+          ...formValues,
+          clientAddress: multiSig || governor || '',
+        }}
         validationSchema={EscrowFormSchema}
         onSubmit={handleSubmit}
         validateOnMount={false}
@@ -201,7 +209,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
                       : undefined
                   }
                   helperText={
-                    'This is the wallet address that will control the escrow for releasing funds. This can be DAO or multisig of working group within the DAO.'
+                    'This is the wallet address that will control the escrow for releasing funds. This can be DAO Governer Address or multisig of working group within the DAO. '
                   }
                 />
 
