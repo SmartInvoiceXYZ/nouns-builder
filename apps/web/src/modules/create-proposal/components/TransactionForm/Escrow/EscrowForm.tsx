@@ -164,7 +164,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
         validationSchema={EscrowFormSchema}
         onSubmit={handleSubmit}
         validateOnMount={false}
-        validateOnChange={true}
+        validateOnChange={false}
         validateOnBlur={true}
       >
         {(formik) => (
@@ -278,7 +278,6 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
                   borderRadius={'curved'}
                   type="submit"
                   disabled={
-                    !formik.isValid ||
                     isFormSubmitting ||
                     isMediaUploading ||
                     formik.values?.milestones?.length === 0
