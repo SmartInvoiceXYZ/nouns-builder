@@ -1,10 +1,9 @@
 import * as Sentry from '@sentry/nextjs'
 import { Box, Flex } from '@zoralabs/zord'
-import axios from 'axios'
 import { Field, FieldProps, Formik } from 'formik'
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
-import { toHex } from 'viem'
+// import { toHex } from 'viem'
 import { useAccount, useContractRead } from 'wagmi'
 import { prepareWriteContract, waitForTransaction, writeContract } from 'wagmi/actions'
 
@@ -16,8 +15,8 @@ import { SuccessModalContent } from 'src/components/Modal/SuccessModalContent'
 import { SUCCESS_MESSAGES } from 'src/constants/messages'
 import { governorAbi, tokenAbi } from 'src/data/contract/abis'
 import { useDaoStore } from 'src/modules/dao'
-import { ErrorResult } from 'src/services/errorResult'
-import { Simulation, SimulationResult } from 'src/services/simulationService'
+// import { ErrorResult } from 'src/services/errorResult'
+// import { Simulation, SimulationResult } from 'src/services/simulationService'
 import { useChainStore } from 'src/stores/useChainStore'
 import { AddressType, CHAIN_ID } from 'src/typings'
 
@@ -52,22 +51,21 @@ const logError = async (e: unknown) => {
 }
 
 export const ReviewProposalForm = ({
-  disabled: disabledForm,
+  disabled,
   title,
   summary,
   transactions,
 }: ReviewProposalProps) => {
   const router = useRouter()
   const addresses = useDaoStore((state) => state.addresses)
+
   const chain = useChainStore((x) => x.chain)
   //@ts-ignore
   const { address } = useAccount()
   const { clearProposal } = useProposalStore()
 
   const [error, setError] = useState<string | undefined>()
-  const [simulationError, setSimulationError] = useState<string | undefined>()
-  const [simulating, setSimulating] = useState<boolean>(false)
-  const [simulations, setSimulations] = useState<Array<Simulation>>([])
+
   const [proposing, setProposing] = useState<boolean>(false)
 
   const { data: votes, isLoading } = useContractRead({
@@ -88,10 +86,6 @@ export const ReviewProposalForm = ({
 
   const onSubmit = React.useCallback(
     async (values: FormValues) => {
-      setError(undefined)
-      setSimulationError(undefined)
-      setSimulations([])
-
       if (proposalThreshold === undefined) return
 
       const votesToNumber = votes ? Number(votes) : 0
@@ -106,44 +100,6 @@ export const ReviewProposalForm = ({
         values: transactionValues,
         calldata,
       } = prepareProposalTransactions(values.transactions)
-
-      if (!!CHAINS_TO_SIMULATE.find((x) => x === chain.id)) {
-        let simulationResults
-
-        try {
-          setSimulating(true)
-
-          simulationResults = await axios
-            .post<SimulationResult>('/api/simulate', {
-              treasuryAddress: addresses?.treasury,
-              chainId: chain.id,
-              calldatas: calldata,
-              values: transactionValues.map((x) => toHex(x)),
-              targets,
-            })
-            .then((res) => res.data)
-        } catch (err) {
-          if (axios.isAxiosError(err)) {
-            const data = err.response?.data as ErrorResult
-            setSimulationError(data.error)
-            logError(err)
-          } else {
-            logError(err)
-            setSimulationError('Unable to simulate transactions on DAO create form')
-          }
-          return
-        } finally {
-          setSimulating(false)
-        }
-        const simulationFailed = simulationResults?.success === false
-        if (simulationFailed) {
-          const failed =
-            simulationResults?.simulations.filter(({ success }) => success === false) ||
-            []
-          setSimulations(failed)
-          return
-        }
-      }
 
       try {
         const params = {
@@ -210,13 +166,6 @@ export const ReviewProposalForm = ({
         >
           {(formik) => (
             <form onSubmit={formik.handleSubmit} style={{ width: '100%' }}>
-              <Transactions
-                disabled={disabledForm}
-                transactions={transactions}
-                simulations={simulations}
-                simulationError={simulationError}
-              />
-
               <Field name="title">
                 {({ field }: FieldProps) => (
                   <TextInput
@@ -224,7 +173,7 @@ export const ReviewProposalForm = ({
                     id={'title'}
                     inputLabel={'Proposal Title'}
                     type={'text'}
-                    disabled={disabledForm}
+                    disabled={false}
                     errorMessage={formik.errors['title']}
                   />
                 )}
@@ -235,7 +184,7 @@ export const ReviewProposalForm = ({
                   <MarkdownEditor
                     value={field.value}
                     onChange={(value: string) => formik?.setFieldValue(field.name, value)}
-                    disabled={disabledForm}
+                    disabled={false}
                     inputLabel={'Summary'}
                     errorMessage={formik.errors['summary']}
                   />
@@ -246,8 +195,8 @@ export const ReviewProposalForm = ({
                 mt={'x3'}
                 width={'100%'}
                 borderRadius={'curved'}
-                loading={simulating}
-                disabled={simulating || proposing}
+                loading={false}
+                disabled={false}
                 h={'x15'}
                 handleClick={() => formik.submitForm()}
               >

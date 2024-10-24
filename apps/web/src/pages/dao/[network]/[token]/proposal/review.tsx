@@ -9,7 +9,6 @@ import { CACHE_TIMES } from 'src/constants/cacheTimes'
 import { PUBLIC_DEFAULT_CHAINS } from 'src/constants/defaultChains'
 import getDAOAddresses from 'src/data/contract/requests/getDAOAddresses'
 import { useVotes } from 'src/hooks'
-import { useDelayedGovernance } from 'src/hooks/useDelayedGovernance'
 import { getDaoLayout } from 'src/layouts/DaoLayout'
 import {
   CreateProposalHeading,
@@ -39,11 +38,13 @@ const ReviewProposalPage: NextPageWithLayout = () => {
     collectionAddress: query?.token as AddressType,
   })
 
-  const { isGovernanceDelayed } = useDelayedGovernance({
-    chainId: chain.id,
-    tokenAddress: addresses?.token,
-    governorAddress: addresses?.governor,
-  })
+  // const { isGovernanceDelayed } = useDelayedGovernance({
+  //   chainId: chain.id,
+  //   tokenAddress: addresses?.token,
+  //   governorAddress: addresses?.governor,
+  // })
+
+  const isGovernanceDelayed = false
 
   const transactions = useProposalStore((state) => state.transactions)
   const disabled = useProposalStore((state) => state.disabled)

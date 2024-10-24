@@ -39,7 +39,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       options
     )
     const json = await jwtRepsonse.json()
-    const { JWT } = json
+    const JWT = 'put-jwt-here-lol'
     return NextResponse.json({ JWT }, { status: 200 })
   } catch (e) {
     console.log(e)

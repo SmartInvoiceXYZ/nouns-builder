@@ -5,7 +5,6 @@ import { CHAIN_ID } from 'src/typings'
 
 import { getProvider } from '../utils/provider'
 import { BackendFailedError, InvalidRequestError, NotFoundError } from './errors'
-import { getRedisConnection } from './redisConnection'
 
 const EIP1967_PROXY_STORAGE_SLOT =
   '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc'
@@ -20,14 +19,14 @@ export type ContractABIResult = {
 }
 
 const CHAIN_API_LOOKUP: Record<CHAIN_ID, string> = {
-  [CHAIN_ID.ETHEREUM]: 'api.etherscan.io',
-  [CHAIN_ID.OPTIMISM]: 'api-optimistic.etherscan.io',
-  [CHAIN_ID.SEPOLIA]: 'api-sepolia.etherscan.io',
-  [CHAIN_ID.OPTIMISM_SEPOLIA]: 'api-sepolia-optimistic.etherscan.io',
-  [CHAIN_ID.BASE]: 'api.basescan.org',
-  [CHAIN_ID.BASE_SEPOLIA]: 'api-sepolia.basescan.org',
-  [CHAIN_ID.ZORA]: 'explorer.zora.energy',
-  [CHAIN_ID.ZORA_SEPOLIA]: 'sepolia.explorer.zora.energy',
+  [CHAIN_ID.ETHEREUM]: 'mainnet',
+  [CHAIN_ID.OPTIMISM]: 'optimism',
+  [CHAIN_ID.SEPOLIA]: 'sepolia',
+  [CHAIN_ID.OPTIMISM_SEPOLIA]: 'optimismSepolia',
+  [CHAIN_ID.BASE]: 'base',
+  [CHAIN_ID.BASE_SEPOLIA]: 'baseSepolia',
+  [CHAIN_ID.ZORA]: 'zora',
+  [CHAIN_ID.ZORA_SEPOLIA]: 'zoraSepolia',
   [CHAIN_ID.FOUNDRY]: '',
 }
 
@@ -68,37 +67,24 @@ export const getContractABIByAddress = async (
 
   const chainIdStr = chainId.toString()
 
-  const redisConnection = getRedisConnection()
+  const abidata = await axios.get(
+    `https://abidata.net/${fetchedAddress}?network=${CHAIN_API_LOOKUP[chainId]}`
+  )
 
-  let cache = await redisConnection?.get(getRedisKey(chainIdStr, fetchedAddress))
+  if (abidata.status !== 200) {
+    throw new BackendFailedError('Remote request failed')
+  }
 
-  if (cache) {
+  const abi = abidata.data as { ok: boolean; abi: any }
+
+  if (abi.ok) {
     return {
-      abi: JSON.parse(cache).result,
-      address,
+      abi: JSON.stringify(abi.abi),
       fetchedAddress,
-      source: 'cache',
+      address,
+      source: 'fetched',
     }
   } else {
-    const etherscan = await axios.get(
-      `https://${CHAIN_API_LOOKUP[chainId]}/api?module=contract&action=getabi&address=${fetchedAddress}&apikey=${process.env.ETHERSCAN_API_KEY}`
-    )
-
-    if (etherscan.status !== 200) {
-      throw new BackendFailedError('Remote request failed')
-    }
-    const abi = etherscan.data
-
-    if (abi.status === '1') {
-      redisConnection?.set(getRedisKey(chainIdStr, fetchedAddress), JSON.stringify(abi))
-      return {
-        abi: abi.result,
-        fetchedAddress,
-        address,
-        source: 'fetched',
-      }
-    } else {
-      throw new NotFoundError('Not verified')
-    }
+    throw new NotFoundError('Not verified')
   }
 }
