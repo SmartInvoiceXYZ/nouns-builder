@@ -45,7 +45,7 @@ function getEscrowBundler(chainId: number | string): Address {
     // case 10: // optimism
     //   return '0xe0D0d4927Af5cEed02146e3905bA016301194D43' as Address
     case 11155111: // sepolia
-      return '0xe0D0d4927Af5cEed02146e3905bA016301194D43' as Address
+      return '0x8F9999B2d5C8DC0Eea10753E76c225843ffFc4b3' as Address
     // case 8453: // base
     //   return '0xe0D0d4927Af5cEed02146e3905bA016301194D43' as Address
     default:
