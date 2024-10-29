@@ -4,7 +4,7 @@ import { uploadFile } from 'ipfs-service'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import useSWR from 'swr'
-import { encodeFunctionData } from 'viem'
+import { encodeFunctionData, formatEther } from 'viem'
 
 import SWR_KEYS from 'src/constants/swrKeys'
 import { ProposalsResponse } from 'src/data/subgraph/requests/proposalsQuery'
@@ -62,7 +62,13 @@ export const Escrow: React.FC = () => {
           id: 'milestone-00' + index,
           title: x.title,
           description: x.description,
-          endDate: new Date(x.endDate).getTime(),
+          endDate: new Date(x.endDate).getTime() / 1000, // in seconds
+          createdAt: Date.now() / 1000, // in seconds
+          startDate: Date.now() + 7 * 86400, // set start date 7 days from submission in seconds
+          resolverType: 'kleros',
+          totalAmount: values.milestones.reduce((acc, x) => acc + x.amount, 0),
+          klerosCourt: 1,
+          arbitrationProvider: KLEROS_ARBITRATION_PROVIDER,
           ...(x.mediaType && x.mediaUrl
             ? {
                 documents: [
@@ -71,18 +77,12 @@ export const Escrow: React.FC = () => {
                     type: 'ipfs',
                     src: x.mediaUrl,
                     mimeType: x.mediaType,
-                    createdAt: new Date().getTime(),
+                    createdAt: new Date().getTime() / 1000,
                   },
                 ],
               }
             : {}),
         })),
-        resolverType: 'kleros',
-        totalAmount: values.milestones.reduce((acc, x) => acc + x.amount, 0),
-        klerosCourt: 1,
-        createdAt: Date.now(),
-        startDate: Date.now() + 7 * 86400 * 1000, // set start date 7 days from submission
-        arbitrationProvider: KLEROS_ARBITRATION_PROVIDER,
       }
 
       const jsonDataToUpload = JSON.stringify(ipfsDataToUpload, null, 2)
@@ -112,10 +112,15 @@ export const Escrow: React.FC = () => {
         )
       }
 
+      // add 1s delay here
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
       // create bundler transaction data
       const escrowData = createEscrowData(values, ipfsCID, chainId)
       const milestoneAmounts = values.milestones.map((x) => x.amount * 10 ** 18)
       const fundAmount = milestoneAmounts.reduce((acc, x) => acc + x, 0)
+
+      console.log(milestoneAmounts, fundAmount)
 
       const escrow = {
         target: getEscrowBundler(chainId),
@@ -125,15 +130,13 @@ export const Escrow: React.FC = () => {
           functionName: 'deployEscrow',
           args: [milestoneAmounts, escrowData, fundAmount],
         }),
-        value: Number(fundAmount * 10 ** -18).toString(),
+        value: formatEther(fundAmount),
       }
 
       // add to queue
       addTransaction({
         type: TransactionType.ESCROW,
-        summary: `Create and fund new Escrow with ${Number(
-          fundAmount * 10 ** -18 || 0
-        )?.toPrecision(5)} ETH`,
+        summary: `Create and fund new Escrow with ${formatEther(fundAmount)} ETH`,
         transactions: [escrow],
       })
 

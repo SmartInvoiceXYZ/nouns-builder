@@ -59,7 +59,7 @@ function createEscrowData(
   chainId: string | number
 ) {
   const warappedTokenAddress = getWrappedTokenAddress(chainId)
-  const terminationTime = new Date(values.safetyValveDate).getTime()
+  const terminationTime = new Date(values.safetyValveDate).getTime() / 1000
   const ipfsBytesCid = convertIpfsCidV0ToByte32(ipfsCID)
 
   // encode abi parameters to create escrowData
