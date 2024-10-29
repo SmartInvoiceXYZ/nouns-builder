@@ -62,7 +62,13 @@ export const Escrow: React.FC = () => {
           id: 'milestone-00' + index,
           title: x.title,
           description: x.description,
-          endDate: new Date(x.endDate).getTime(),
+          endDate: new Date(x.endDate).getTime() / 1000, // in seconds
+          createdAt: Date.now() / 1000, // in seconds
+          startDate: Date.now() + 7 * 86400, // set start date 7 days from submission in seconds
+          resolverType: 'kleros',
+          totalAmount: values.milestones.reduce((acc, x) => acc + x.amount, 0),
+          klerosCourt: 1,
+          arbitrationProvider: KLEROS_ARBITRATION_PROVIDER,
           ...(x.mediaType && x.mediaUrl
             ? {
                 documents: [
@@ -71,18 +77,12 @@ export const Escrow: React.FC = () => {
                     type: 'ipfs',
                     src: x.mediaUrl,
                     mimeType: x.mediaType,
-                    createdAt: new Date().getTime(),
+                    createdAt: new Date().getTime() / 1000,
                   },
                 ],
               }
             : {}),
         })),
-        resolverType: 'kleros',
-        totalAmount: values.milestones.reduce((acc, x) => acc + x.amount, 0),
-        klerosCourt: 1,
-        createdAt: Date.now(),
-        startDate: Date.now() + 7 * 86400 * 1000, // set start date 7 days from submission
-        arbitrationProvider: KLEROS_ARBITRATION_PROVIDER,
       }
 
       const jsonDataToUpload = JSON.stringify(ipfsDataToUpload, null, 2)
@@ -111,6 +111,9 @@ export const Escrow: React.FC = () => {
           )
         )
       }
+
+      // add 1s delay here
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
       // create bundler transaction data
       const escrowData = createEscrowData(values, ipfsCID, chainId)
