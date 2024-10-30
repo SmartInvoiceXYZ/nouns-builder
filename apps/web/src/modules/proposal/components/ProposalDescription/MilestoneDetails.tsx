@@ -1,5 +1,6 @@
 import { Button, Stack, Text } from '@zoralabs/zord'
 import axios from 'axios'
+import { IPFS_GATEWAY } from 'ipfs-service/src/gateway'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
 import {
@@ -179,7 +180,7 @@ export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
     if (!doc.src) return null
 
     const href =
-      doc.type === 'ipfs' ? doc.src.replace('ipfs://', 'https://ipfs.io/ipfs/') : doc.src
+      doc.type === 'ipfs' ? doc.src.replace('ipfs://', `${IPFS_GATEWAY}/ipfs/`) : doc.src
 
     return (
       <OptionalLink key={doc.src} enabled={true} href={href}>
