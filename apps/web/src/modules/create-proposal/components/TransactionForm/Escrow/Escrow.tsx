@@ -4,7 +4,7 @@ import { uploadFile } from 'ipfs-service'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import useSWR from 'swr'
-import { encodeFunctionData } from 'viem'
+import { encodeFunctionData, formatEther } from 'viem'
 
 import SWR_KEYS from 'src/constants/swrKeys'
 import { ProposalsResponse } from 'src/data/subgraph/requests/proposalsQuery'
@@ -120,6 +120,8 @@ export const Escrow: React.FC = () => {
       const milestoneAmounts = values.milestones.map((x) => x.amount * 10 ** 18)
       const fundAmount = milestoneAmounts.reduce((acc, x) => acc + x, 0)
 
+      console.log(milestoneAmounts, fundAmount)
+
       const escrow = {
         target: getEscrowBundler(chainId),
         functionSignature: 'deployEscrow()',
@@ -128,15 +130,13 @@ export const Escrow: React.FC = () => {
           functionName: 'deployEscrow',
           args: [milestoneAmounts, escrowData, fundAmount],
         }),
-        value: Number(fundAmount * 10 ** -18).toString(),
+        value: formatEther(fundAmount),
       }
 
       // add to queue
       addTransaction({
         type: TransactionType.ESCROW,
-        summary: `Create and fund new Escrow with ${Number(
-          fundAmount * 10 ** -18 || 0
-        )?.toPrecision(5)} ETH`,
+        summary: `Create and fund new Escrow with ${formatEther(fundAmount)} ETH`,
         transactions: [escrow],
       })
 

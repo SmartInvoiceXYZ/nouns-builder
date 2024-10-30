@@ -203,7 +203,9 @@ export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
                 {`Amount: ${milestoneAmount[index]} ETH`}
               </Text>
               <Text variant="label-xs" color="tertiary">
-                {`Due by: ${new Date(milestone?.endDate as number).toLocaleDateString()}`}
+                {`Due by: ${new Date(
+                  (milestone?.endDate as number) * 1000
+                ).toLocaleDateString()}`}
               </Text>
             </Stack>
 
