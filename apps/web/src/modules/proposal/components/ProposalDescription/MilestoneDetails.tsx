@@ -66,11 +66,14 @@ export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
     parseAbiParameters([
       'address client',
       'address resolver',
+      'uint8 resolverType',
       'address token',
       'uint256 terminationTime',
       'bytes32 details',
       'address provider',
       'address providerReceiver',
+      'bool requireVerification',
+      'bytes32 escrowType',
     ]),
     decodedTxnData?._escrowData?.value as Hex
   )
