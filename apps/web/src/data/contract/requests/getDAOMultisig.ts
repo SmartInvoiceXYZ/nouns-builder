@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { Address, checksumAddress, isAddress } from 'viem'
+import { checksumAddress, isAddress } from 'viem'
 
-import { AddressType, CHAIN_ID } from 'src/typings'
+import { CHAIN_ID } from 'src/typings'
 
 interface AttestationResponse {
   data: {

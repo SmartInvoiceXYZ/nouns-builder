@@ -130,13 +130,13 @@ export const Escrow: React.FC = () => {
           functionName: 'deployEscrow',
           args: [milestoneAmounts, escrowData, fundAmount],
         }),
-        value: formatEther(fundAmount),
+        value: formatEther(BigInt(fundAmount)),
       }
 
       // add to queue
       addTransaction({
         type: TransactionType.ESCROW,
-        summary: `Create and fund new Escrow with ${formatEther(fundAmount)} ETH`,
+        summary: `Create and fund new Escrow with ${formatEther(BigInt(fundAmount))} ETH`,
         transactions: [escrow],
       })
 

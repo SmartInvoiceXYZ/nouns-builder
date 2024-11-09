@@ -7,7 +7,7 @@ import { CHAIN_ID } from 'src/typings'
 
 import { EscrowFormState, EscrowFormValues } from './EscrowForm.schema'
 
-const ESCROW_KLEROS_ARBITRATION_PROVIDER =
+const KLEROS_ARBITRATION_PROVIDER =
   '0x18542245cA523DFF96AF766047fE9423E0BED3C0' as Address
 const ESCROW_RESOLVER_TYPE = 0
 const ESCROW_REQUIRE_VERIFICATION = true
@@ -98,7 +98,7 @@ function createEscrowData(
     ].map((type) => ({ type })),
     [
       values.clientAddress,
-      ESCROW_KLEROS_ARBITRATION_PROVIDER,
+      KLEROS_ARBITRATION_PROVIDER,
       ESCROW_RESOLVER_TYPE,
       warappedTokenAddress,
       terminationTime,
@@ -183,7 +183,7 @@ const useEscrowFormStore = create(
 export {
   createEscrowData,
   getEscrowBundler,
-  ESCROW_KLEROS_ARBITRATION_PROVIDER,
+  KLEROS_ARBITRATION_PROVIDER,
   deployEscrowAbi,
   useEscrowFormStore,
 }
