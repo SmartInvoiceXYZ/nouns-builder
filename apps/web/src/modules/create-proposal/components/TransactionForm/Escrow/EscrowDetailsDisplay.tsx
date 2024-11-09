@@ -48,10 +48,10 @@ export default function EscrowDetailsDisplay() {
         </Box>
         <Box>
           <Text fontSize={12} color="text4" style={{ fontWeight: 'bold' }}>
-            Arbitration Provider
+            Escrow Service by
           </Text>
           <Text variant="heading-sm" style={{ fontWeight: 'bold' }}>
-            Kleros
+            SmartInvoice.xyz
           </Text>
         </Box>
       </Stack>
