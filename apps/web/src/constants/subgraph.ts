@@ -1,14 +1,17 @@
 import { CHAIN_ID } from 'src/typings'
 
+// TODO: Update supgraphs on the main goldsky project and fix links
+
 export const PUBLIC_SUBGRAPH_URL = {
   [CHAIN_ID.ETHEREUM]:
-    'https://api.goldsky.com/api/public/project_clkk1ucdyf6ak38svcatie9tf/subgraphs/nouns-builder-ethereum-mainnet/stable/gn',
+    // 'https://api.goldsky.com/api/public/project_clkk1ucdyf6ak38svcatie9tf/subgraphs/nouns-builder-ethereum-mainnet/stable/gn',
+    'https://api.goldsky.com/api/public/project_cm33ek8kjx6pz010i2c3w8z25/subgraphs/nouns-builder-ethereum-mainnet/0.0.5/gn',
   [CHAIN_ID.OPTIMISM]:
-    'https://api.goldsky.com/api/public/project_clkk1ucdyf6ak38svcatie9tf/subgraphs/nouns-builder-optimism-mainnet/stable/gn',
+    // 'https://api.goldsky.com/api/public/project_clkk1ucdyf6ak38svcatie9tf/subgraphs/nouns-builder-optimism-mainnet/stable/gn',
+    'https://api.goldsky.com/api/public/project_cm33ek8kjx6pz010i2c3w8z25/subgraphs/nouns-builder-optimism-mainnet/0.0.5/gn',
   [CHAIN_ID.SEPOLIA]:
-    // TODO: Update to the main subgraph
     //'https://api.goldsky.com/api/public/project_clkk1ucdyf6ak38svcatie9tf/subgraphs/nouns-builder-sepolia-testnet/stable/gn',
-    'https://api.goldsky.com/api/public/project_cm2itwou5aapv01we2n0q698q/subgraphs/nouns-builder-sepolia/1.0.0/gn',
+    'https://api.goldsky.com/api/public/project_cm33ek8kjx6pz010i2c3w8z25/subgraphs/nouns-builder-sepolia-testnet/0.0.5/gn',
   [CHAIN_ID.OPTIMISM_SEPOLIA]:
     'https://api.goldsky.com/api/public/project_clkk1ucdyf6ak38svcatie9tf/subgraphs/nouns-builder-optimism-sepolia/stable/gn',
   [CHAIN_ID.BASE]:
