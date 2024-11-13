@@ -6,6 +6,9 @@ import { useState } from 'react'
 import useSWR from 'swr'
 import { encodeFunctionData, formatEther } from 'viem'
 
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+
 import SWR_KEYS from 'src/constants/swrKeys'
 import { ProposalsResponse } from 'src/data/subgraph/requests/proposalsQuery'
 import { getProposals } from 'src/data/subgraph/requests/proposalsQuery'
@@ -33,7 +36,6 @@ export const Escrow: React.FC = () => {
   const { id: chainId } = getChainFromLocalStorage()
 
   const addTransaction = useProposalStore((state) => state.addTransaction)
-  const removeTransactions = useProposalStore((state) => state.removeAllTransactions)
 
   const { data } = useSWR<ProposalsResponse>(
     isReady ? [SWR_KEYS.PROPOSALS, chainId, query.token, '0'] : null,
@@ -46,9 +48,7 @@ export const Escrow: React.FC = () => {
 
   const handleEscrowTransaction = useCallback(
     async (values: EscrowFormValues) => {
-      // Allow only single escrow transaction
-      removeTransactions()
-
+      
       const ipfsDataToUpload = {
         title: 'Proposal #' + (lastProposalId + 1),
         description: window?.location.href.replace(
@@ -113,7 +113,7 @@ export const Escrow: React.FC = () => {
       }
 
       // add 1s delay here
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await wait(1000);
 
       // create bundler transaction data
       const escrowData = createEscrowData(values, ipfsCID, chainId)
@@ -133,6 +133,7 @@ export const Escrow: React.FC = () => {
         value: formatEther(BigInt(fundAmount)),
       }
 
+      try {
       // add to queue
       addTransaction({
         type: TransactionType.ESCROW,
@@ -140,7 +141,12 @@ export const Escrow: React.FC = () => {
         transactions: [escrow],
       })
 
-      setIsIPFSUploading(false)
+      
+    } catch (err) {
+      console.log('Error', err);
+      setIpfsCID('');
+    }
+    setIsIPFSUploading(false)
     },
     [formValues]
   )
