@@ -46,12 +46,12 @@ export default function EscrowDetailsDisplay() {
             {totalEscrowAmount ?? '0.00'} ETH
           </Text>
         </Box>
-        <Box>
+        <Box style={{ textAlign: 'right' }}>
           <Text fontSize={12} color="text4" style={{ fontWeight: 'bold' }}>
             Escrow Service by
           </Text>
           <Text variant="heading-sm" style={{ fontWeight: 'bold' }}>
-            SmartInvoice.xyz
+            SmartInvoice
           </Text>
         </Box>
       </Stack>
