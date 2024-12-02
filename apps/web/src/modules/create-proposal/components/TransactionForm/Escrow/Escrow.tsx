@@ -33,7 +33,6 @@ export const Escrow: React.FC = () => {
   const { id: chainId } = getChainFromLocalStorage()
 
   const addTransaction = useProposalStore((state) => state.addTransaction)
-  const removeTransactions = useProposalStore((state) => state.removeAllTransactions)
 
   const { data } = useSWR<ProposalsResponse>(
     isReady ? [SWR_KEYS.PROPOSALS, chainId, query.token, '0'] : null,
@@ -111,7 +110,10 @@ export const Escrow: React.FC = () => {
       }
 
       // add 1s delay here
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(() => {
+        console.log('Wait for Ipfs upload');
+        resolve();
+      }, 1000));
 
       // create bundler transaction data
       const escrowData = createEscrowData(values, ipfsCID, chainId)
@@ -131,6 +133,7 @@ export const Escrow: React.FC = () => {
         value: formatEther(BigInt(fundAmount)),
       }
 
+      try {
       // add to queue
       addTransaction({
         type: TransactionType.ESCROW,
@@ -138,7 +141,12 @@ export const Escrow: React.FC = () => {
         transactions: [escrow],
       })
 
-      setIsIPFSUploading(false)
+      
+    } catch (err) {
+      console.log('Error', err);
+      setIpfsCID('');
+    }
+    setIsIPFSUploading(false)
     },
     [formValues]
   )
