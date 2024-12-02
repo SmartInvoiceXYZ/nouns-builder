@@ -6,6 +6,9 @@ import { useState } from 'react'
 import useSWR from 'swr'
 import { encodeFunctionData, formatEther } from 'viem'
 
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+
 import SWR_KEYS from 'src/constants/swrKeys'
 import { ProposalsResponse } from 'src/data/subgraph/requests/proposalsQuery'
 import { getProposals } from 'src/data/subgraph/requests/proposalsQuery'
@@ -110,10 +113,7 @@ export const Escrow: React.FC = () => {
       }
 
       // add 1s delay here
-      await new Promise(resolve => setTimeout(() => {
-        console.log('Wait for Ipfs upload');
-        resolve();
-      }, 1000));
+      await wait(1000);
 
       // create bundler transaction data
       const escrowData = createEscrowData(values, ipfsCID, chainId)
