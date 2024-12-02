@@ -46,9 +46,7 @@ export const Escrow: React.FC = () => {
 
   const handleEscrowTransaction = useCallback(
     async (values: EscrowFormValues) => {
-      // Allow only single escrow transaction
-      removeTransactions()
-
+      
       const ipfsDataToUpload = {
         title: 'Proposal #' + (lastProposalId + 1),
         description: window?.location.href.replace(
