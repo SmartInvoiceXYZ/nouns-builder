@@ -122,7 +122,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
 
   const { formValues, setFormValues } = useEscrowFormStore()
   const {
-    addresses: { multiSig, governor },
+    addresses: { multiSig, governor, treasury },
   } = useDaoStore()
 
   const handleSubmit = useCallback(
@@ -159,7 +159,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
       <Formik
         initialValues={{
           ...formValues,
-          clientAddress: multiSig || governor || '',
+          clientAddress: multiSig || treasury || '',
         }}
         validationSchema={EscrowFormSchema}
         onSubmit={handleSubmit}
