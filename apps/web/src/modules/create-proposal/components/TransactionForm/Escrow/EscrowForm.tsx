@@ -164,7 +164,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
         validationSchema={EscrowFormSchema}
         onSubmit={handleSubmit}
         validateOnMount={false}
-        validateOnChange={false}
+        validateOnChange={true}
         validateOnBlur={true}
       >
         {(formik) => (
