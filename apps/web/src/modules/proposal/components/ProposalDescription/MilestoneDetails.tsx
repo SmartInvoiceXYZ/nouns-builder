@@ -1,4 +1,4 @@
-import { Button, Stack, Text } from '@zoralabs/zord'
+import { Box, Button, Stack, Text } from '@zoralabs/zord'
 import axios from 'axios'
 import { IPFS_GATEWAY } from 'ipfs-service/src/gateway'
 import { useRouter } from 'next/router'
@@ -60,6 +60,14 @@ export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
   const { chain: invoiceChain } = useChainStore()
   const { addresses } = useDaoStore()
   const { removeAllTransactions, addTransaction } = useProposalStore()
+
+  if (!decodedTxnData?._escrowData?.value) {
+    return (
+      <Text variant="code" color="negative">
+        Error Decoding Escrow Milestones
+      </Text>
+    )
+  }
 
   // Decode transaction data
   const decodedAbiData = decodeAbiParameters(
@@ -219,7 +227,8 @@ export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
               {milestone.documents?.map((doc, index) => renderDocumentLink(doc))}
             </Stack>
 
-            {executionTransactionHash && renderMilestoneButton(index, isReleased, isNext)}
+            {!!executionTransactionHash &&
+              renderMilestoneButton(index, isReleased, isNext)}
           </Stack>
         ),
       }
