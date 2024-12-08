@@ -183,7 +183,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
                   {...formik.getFieldProps('recipientAddress')}
                   id="recipientAddress"
                   inputLabel={'Recipient'}
-                  placeholder={'0x... or .eth'}
+                  placeholder={'0x...'}
                   isAddress={true}
                   errorMessage={
                     formik.touched.recipientAddress && formik.errors.recipientAddress
