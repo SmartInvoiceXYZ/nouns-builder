@@ -1,4 +1,4 @@
-import { Box, Flex, Paragraph, atoms } from '@zoralabs/zord'
+import { Box, Flex, Paragraph, Text, atoms } from '@zoralabs/zord'
 import { useEffect } from 'hono/jsx'
 import { toLower } from 'lodash'
 import Image from 'next/image'
@@ -53,6 +53,7 @@ export const ProposalDescription: React.FC<ProposalDescriptionProps> = ({
 }) => {
   const { description, proposer, calldatas, values, targets, executionTransactionHash } =
     proposal
+
   const { displayName } = useEnsData(proposer)
   const chain = useChainStore((x) => x.chain)
 
@@ -96,12 +97,19 @@ export const ProposalDescription: React.FC<ProposalDescriptionProps> = ({
             )}
           </Paragraph>
         </Section>
+
         {isEscrow && decodedTxnData && (
           <Section title="Escrow Milestones">
-            <MilestoneDetails
-              decodedTxnData={decodedTxnData}
-              executionTransactionHash={executionTransactionHash}
-            />
+            {executionTransactionHash ? (
+              <MilestoneDetails
+                decodedTxnData={decodedTxnData}
+                executionTransactionHash={executionTransactionHash}
+              />
+            ) : !decodedTxnData?._escrowData?.value ? (
+              <Text variant="code" color="negative">
+                Error Decoding Escrow Milestones
+              </Text>
+            ) : null}
           </Section>
         )}
 

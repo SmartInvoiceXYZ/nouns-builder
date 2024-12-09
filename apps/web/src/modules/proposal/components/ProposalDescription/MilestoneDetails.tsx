@@ -219,7 +219,8 @@ export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
               {milestone.documents?.map((doc, index) => renderDocumentLink(doc))}
             </Stack>
 
-            {executionTransactionHash && renderMilestoneButton(index, isReleased, isNext)}
+            {!!executionTransactionHash &&
+              renderMilestoneButton(index, isReleased, isNext)}
           </Stack>
         ),
       }

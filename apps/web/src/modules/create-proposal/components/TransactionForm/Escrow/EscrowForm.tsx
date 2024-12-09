@@ -72,8 +72,6 @@ const MilestoneForm: React.FC<{
         formik={formik}
         id={`milestones.${index}.description`}
         value={formik.values?.milestones[index]?.description}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
         inputLabel="Description"
         placeholder={'Milestone description is highly encouraged'}
       />
@@ -183,7 +181,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
                   {...formik.getFieldProps('recipientAddress')}
                   id="recipientAddress"
                   inputLabel={'Recipient'}
-                  placeholder={'0x... or .eth'}
+                  placeholder={'0x...'}
                   isAddress={true}
                   errorMessage={
                     formik.touched.recipientAddress && formik.errors.recipientAddress
