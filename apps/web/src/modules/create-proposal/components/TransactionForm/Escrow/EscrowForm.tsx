@@ -72,8 +72,6 @@ const MilestoneForm: React.FC<{
         formik={formik}
         id={`milestones.${index}.description`}
         value={formik.values?.milestones[index]?.description}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
         inputLabel="Description"
         placeholder={'Milestone description is highly encouraged'}
       />
@@ -164,7 +162,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
         validationSchema={EscrowFormSchema}
         onSubmit={handleSubmit}
         validateOnMount={false}
-        validateOnChange={true}
+        validateOnChange={false}
         validateOnBlur={true}
       >
         {(formik) => (
