@@ -100,16 +100,16 @@ export const ProposalDescription: React.FC<ProposalDescriptionProps> = ({
 
         {isEscrow && decodedTxnData && (
           <Section title="Escrow Milestones">
-            {executionTransactionHash ? (
+            {decodedTxnData?._escrowData?.value ? (
               <MilestoneDetails
                 decodedTxnData={decodedTxnData}
                 executionTransactionHash={executionTransactionHash}
               />
-            ) : !decodedTxnData?._escrowData?.value ? (
+            ) : 
               <Text variant="code" color="negative">
                 Error Decoding Escrow Milestones
               </Text>
-            ) : null}
+            }
           </Section>
         )}
 
