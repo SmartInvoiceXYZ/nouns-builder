@@ -78,7 +78,7 @@ export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
     decodedTxnData?._escrowData?.value as Hex
   )
 
-  const invoiceCid = convertByte32ToIpfsCidV0((decodedAbiData as never)?.[4])
+  const invoiceCid = convertByte32ToIpfsCidV0((decodedAbiData as never)?.[5])
   const clientAddress = (decodedAbiData as never)?.[0]
 
   // Fetch invoice data from IPFS
