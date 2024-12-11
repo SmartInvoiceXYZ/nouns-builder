@@ -70,10 +70,10 @@ export const getContractABIByAddress = async (
     }
   } else {
 
-    console.log(`https://api.etherscan.io/api?chainid=${chainId}&module=contract&action=getabi&address=${fetchedAddress}&apikey=${process.env.ETHERSCAN_API_KEY}`)
+    console.log(`https://api.etherscan.io/v2/api?chainid=${chainId}&module=contract&action=getabi&address=${fetchedAddress}&tag=latest&apikey=${process.env.ETHERSCAN_API_KEY}`)
 
     const etherscan = await axios.get(
-      `https://api.etherscan.io/api?chainid=${chainId}&module=contract&action=getabi&address=${fetchedAddress}&apikey=${process.env.ETHERSCAN_API_KEY}`
+      `https://api.etherscan.io/v2/api?chainid=${chainId}&module=contract&action=getabi&address=${fetchedAddress}&tag=latest&apikey=${process.env.ETHERSCAN_API_KEY}`
     )
 
 
