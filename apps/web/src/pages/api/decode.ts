@@ -29,7 +29,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           : '0x37bdc99b', // manually set function signature for release(_milestone) instead of release()
     })
 
-    console.log({decodeResult, functionInfo})
 
     const argMapping = functionInfo.inputs.reduce(
       (last: any, input: any, index: number) => {
