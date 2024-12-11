@@ -144,29 +144,35 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
                         !decoded.transaction?.decoded?.length &&
                         `)`}
                     </Flex>
+
                     <Stack pl={'x4'} gap={'x1'}>
                       {(decoded?.transaction?.args &&
-                        Object?.values(decoded?.transaction?.args).map((arg: any) => (
-                          // if verified contract and arguments object {name, value}
-
-                          <Flex key={arg?.name}>
-                            {arg?.name}:{' '}
-                            {arg?.name === '_milestoneAmounts'
-                              ? arg.value
-                                  .split(',')
-                                  .map((amt: string) => `${formatEther(BigInt(amt))} ETH`)
-                                  .join(', ')
-                              : arg?.name === '_fundAmount'
-                              ? formatEther(BigInt(arg?.value)) + ' ETH'
-                              : arg?.value}
-                          </Flex>
-                        ))) ||
+                        Object?.values(decoded?.transaction?.args).map(
+                          (arg: any) =>
+                            // Skip if arg.name is '_escrowData'
+                            arg?.name !== '_escrowData' && (
+                              <Flex key={arg?.name}>
+                                {arg?.name}:{' '}
+                                {arg?.name === '_milestoneAmounts'
+                                  ? arg.value
+                                      .split(',')
+                                      .map(
+                                        (amt: string) => `${formatEther(BigInt(amt))} ETH`
+                                      )
+                                      .join(', ')
+                                  : arg?.name === '_fundAmount'
+                                  ? formatEther(BigInt(arg?.value)) + ' ETH'
+                                  : arg?.value}
+                              </Flex>
+                            )
+                        )) ||
                         // if unverified contract and arguments array [value]
                         (decoded?.transaction?.decoded &&
                           decoded?.transaction?.decoded?.map((arg: any) => (
                             <Flex key={arg}>{arg}</Flex>
                           )))}
                     </Stack>
+
                     {(!!decoded?.transaction?.args ||
                       !!decoded?.transaction?.decoded?.length) &&
                       `)`}
