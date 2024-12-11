@@ -10,6 +10,8 @@ import { CHAIN_ID } from 'src/typings'
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { contract, calldata, chain } = req.body
 
+  console.log({ contract, calldata, chain })
+
   if (!contract) return res.status(404).json({ error: 'no address request' })
   if (!calldata) return res.status(404).json({ error: 'no calldata request' })
   if (!chain) return res.status(404).json({ error: 'no chain request' })
@@ -26,6 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ? decodeResult.functionName
           : '0x37bdc99b', // manually set function signature for release(_milestone) instead of release()
     })
+
+    console.log({decodeResult, functionInfo})
 
     const argMapping = functionInfo.inputs.reduce(
       (last: any, input: any, index: number) => {
