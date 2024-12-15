@@ -1,11 +1,14 @@
 import { Box, Flex, Stack, Text, atoms } from '@zoralabs/zord'
 import axios from 'axios'
+import { toLower } from 'lodash'
+import { get } from 'lodash'
 import React, { Fragment } from 'react'
 import useSWR from 'swr'
-import { formatEther } from 'viem'
+import { decodeAbiParameters, formatEther, parseAbiParameters } from 'viem'
 
 import { ETHERSCAN_BASE_URL } from 'src/constants/etherscan'
 import SWR_KEYS from 'src/constants/swrKeys'
+import { getEscrowBundler } from 'src/modules/create-proposal/components/TransactionForm/Escrow/EscrowUtils'
 import { useChainStore } from 'src/stores/useChainStore'
 import { CHAIN_ID } from 'src/typings'
 import { walletSnippet } from 'src/utils/helpers'
@@ -14,19 +17,18 @@ interface DecodedTransactionProps {
   targets: string[]
   calldatas: string[]
   values: string[]
+  setDecodedTxnData: React.Dispatch<React.SetStateAction<any>>
 }
+
 export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
   targets,
   calldatas,
   values,
+  setDecodedTxnData,
 }) => {
   const chain = useChainStore((x) => x.chain)
+  const isEscrow = targets.includes(toLower(getEscrowBundler(chain.id)))
 
-  /*
-  
-    format in shape defined in ethers actor
-  
-   */
   const formatSendEth = (value: string) => {
     const amount = formatEther(BigInt(value))
     return {
@@ -44,7 +46,6 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
     calldata: string,
     value: string
   ) => {
-    /* if calldata is '0x' */
     const isTransfer = calldata === '0x'
 
     if (isTransfer) {
@@ -64,10 +65,8 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
     } catch (err) {
       console.log('err', err)
 
-      // if this tx has value display it as a send eth tx
       if (value.length && parseInt(value)) return formatSendEth(value)
 
-      // if no value return original calldata
       return calldata
     }
   }
@@ -86,6 +85,8 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
             values[i]
           )
 
+          setDecodedTxnData(transaction?.args)
+
           return {
             target,
             transaction,
@@ -96,6 +97,53 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
     },
     { revalidateOnFocus: false }
   )
+
+  const renderArgument = (arg: any) => {
+    if (arg?.name === '_escrowData') {
+      // Decode escrow data
+      const decodedAbiData = decodeAbiParameters(
+        parseAbiParameters([
+          'address client',
+          'address resolver',
+          'uint8 resolverType',
+          'address token',
+          'uint256 terminationTime',
+          'bytes32 details',
+          'address provider',
+          'address providerReceiver',
+          'bool requireVerification',
+          'bytes32 escrowType',
+        ]),
+        arg.value
+      )
+
+      return (
+        <Stack pl={'x2'} gap={'x1'}>
+          <Flex>client/signer: {get(decodedAbiData, '[0]', '')}</Flex>
+          <Flex>resolver: {get(decodedAbiData, '[1]', '')}</Flex>
+          <Flex>
+            Safety Valve Date:{' '}
+            {new Date(Number(get(decodedAbiData, '[4]', 0)) * 1000).toLocaleString()}
+          </Flex>
+          <Flex>Service Provider: {get(decodedAbiData, '[6]', '')}</Flex>
+        </Stack>
+      )
+    }
+
+    return (
+      <Flex key={arg?.name}>
+        {arg?.name}:{' '}
+        {arg?.name === '_milestoneAmounts'
+          ? arg.value
+              .split(',')
+              .map((amt: string) => `${formatEther(BigInt(amt))} ETH`)
+              .join(', ')
+          : arg?.name === '_fundAmount'
+          ? formatEther(BigInt(arg?.value)) + ' ETH'
+          : arg?.value}
+      </Flex>
+    )
+  }
 
   return (
     <Stack style={{ maxWidth: 600, wordBreak: 'break-word' }}>
@@ -129,27 +177,27 @@ export const DecodedTransactions: React.FC<DecodedTransactionProps> = ({
                       </a>
                     </Box>
                     <Flex pl={'x2'}>
-                      {`.${decoded?.transaction?.functionName}(`}
+                      {`.${
+                        !isEscrow ? decoded?.transaction?.functionName : 'deployEscrow'
+                      }(`}
                       {!decoded?.transaction?.args &&
-                        !decoded.transaction.decoded.length &&
+                        !decoded.transaction?.decoded?.length &&
                         `)`}
                     </Flex>
+
                     <Stack pl={'x4'} gap={'x1'}>
                       {(decoded?.transaction?.args &&
-                        Object?.values(decoded?.transaction?.args).map((arg: any) => (
-                          // if verified contract and arguments object {name, value}
-                          <Flex key={arg?.name}>
-                            {arg?.name}: {arg?.value}
-                          </Flex>
-                        ))) ||
-                        // if unverified contract and arguments array [value]
+                        Object?.values(decoded?.transaction?.args).map((arg: any) =>
+                          renderArgument(arg)
+                        )) ||
                         (decoded?.transaction?.decoded &&
                           decoded?.transaction?.decoded?.map((arg: any) => (
                             <Flex key={arg}>{arg}</Flex>
                           )))}
                     </Stack>
+
                     {(!!decoded?.transaction?.args ||
-                      !!decoded?.transaction.decoded.length) &&
+                      !!decoded?.transaction?.decoded?.length) &&
                       `)`}
                   </Stack>
                 </Stack>
