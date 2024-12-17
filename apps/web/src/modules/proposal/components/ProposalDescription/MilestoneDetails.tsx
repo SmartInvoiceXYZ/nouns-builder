@@ -2,6 +2,7 @@ import { Button, Stack, Text } from '@zoralabs/zord'
 import axios from 'axios'
 import { IPFS_GATEWAY } from 'ipfs-service/src/gateway'
 import { useRouter } from 'next/router'
+import { useCallback, useEffect, useMemo } from 'react'
 import useSWR from 'swr'
 import {
   Hex,
@@ -27,16 +28,7 @@ import { AddressType } from 'src/typings'
 
 import { DecodedTransaction } from './ProposalDescription'
 
-interface MilestoneDetailsProps {
-  decodedTxnData: DecodedTransaction
-  executionTransactionHash?: string
-}
-
-interface Document {
-  type: string
-  src: string
-}
-
+// Constants remain unchanged
 const RELEASE_FUNCTION_ABI = [
   {
     inputs: [{ internalType: 'uint256', name: '_milestone', type: 'uint256' }],
@@ -47,41 +39,57 @@ const RELEASE_FUNCTION_ABI = [
   },
 ]
 
-// Constants
-const INVOICE_ADDRESS = '0x39f74e876f4c5c8a8e16ad2f543a3e89c3f7d784' // TODO: Get dynamically from execTxnHash
+const INVOICE_ADDRESS = '0x5C2ac7D59B6CCe44da4a4a6285cC5260e14cf6A5' // todo: get from exec txn hash
 const SAFE_APP_URL =
   'https://app.safe.global/share/safe-app?appUrl=https://app.smartinvoice.xyz/invoices'
 
-export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
+interface MilestoneDetailsProps {
+  decodedTxnData: DecodedTransaction
+  executionTransactionHash?: string
+}
+
+interface Document {
+  type: string
+  src: string
+}
+
+export const MilestoneDetails = ({
   decodedTxnData,
   executionTransactionHash,
-}) => {
+}: MilestoneDetailsProps) => {
   const router = useRouter()
   const { chain: invoiceChain } = useChainStore()
   const { addresses } = useDaoStore()
   const { removeAllTransactions, addTransaction } = useProposalStore()
 
   // Decode transaction data
-  const decodedAbiData = decodeAbiParameters(
-    parseAbiParameters([
-      'address client',
-      'address resolver',
-      'uint8 resolverType',
-      'address token',
-      'uint256 terminationTime',
-      'bytes32 details',
-      'address provider',
-      'address providerReceiver',
-      'bool requireVerification',
-      'bytes32 escrowType',
-    ]),
-    decodedTxnData?._escrowData?.value as Hex
-  )
+  const { invoiceCid, clientAddress, milestoneAmount } = useMemo(() => {
+    const decodedAbiData = decodeAbiParameters(
+      parseAbiParameters([
+        'address client',
+        'address resolver',
+        'uint8 resolverType',
+        'address token',
+        'uint256 terminationTime',
+        'bytes32 details',
+        'address provider',
+        'address providerReceiver',
+        'bool requireVerification',
+        'bytes32 escrowType',
+      ]),
+      decodedTxnData?._escrowData?.value as Hex
+    )
 
-  const invoiceCid = convertByte32ToIpfsCidV0((decodedAbiData as never)?.[5])
-  const clientAddress = (decodedAbiData as never)?.[0]
+    return {
+      invoiceCid: convertByte32ToIpfsCidV0((decodedAbiData as never)?.[5]),
+      clientAddress: (decodedAbiData as never)?.[0],
+      milestoneAmount: decodedTxnData['_milestoneAmounts']['value']
+        .split(',')
+        .map((x: string) => formatEther(BigInt(x))),
+    }
+  }, [decodedTxnData])
 
-  // Fetch invoice data from IPFS
+  // Fetch invoice data
   const { data: invoiceData } = useSWR(
     invoiceCid ? [SWR_KEYS.IPFS, invoiceCid] : null,
     async () => {
@@ -96,7 +104,7 @@ export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
     { revalidateOnFocus: false }
   )
 
-  // Get number of released milestones
+  // Get released milestones count
   const { data: numOfMilestonesReleased } = useContractRead({
     address: INVOICE_ADDRESS,
     abi: [
@@ -112,74 +120,77 @@ export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
     chainId: invoiceChain.id,
   })
 
-  const milestoneAmount = decodedTxnData['_milestoneAmounts']['value']
-    .split(',')
-    .map((x: string) => formatEther(BigInt(x)))
+  const handleReleaseMilestone = useCallback(
+    async (index: number) => {
+      const isClientGoverner = isAddressEqual(
+        clientAddress as AddressType,
+        addresses.governor as AddressType
+      )
+      const isClientTreasury = isAddressEqual(
+        clientAddress as AddressType,
+        addresses.treasury as AddressType
+      )
 
-  const handleReleaseMilestone = async (index: number) => {
-    const isClientGoverner = isAddressEqual(
-      clientAddress as AddressType,
-      addresses.governor as AddressType
-    )
+      if (!isClientGoverner && !isClientTreasury) {
+        router.replace(SAFE_APP_URL)
+        return
+      }
 
-    if (!isClientGoverner) {
-      router.replace(SAFE_APP_URL)
-      return
-    }
+      const releaseMilestone = {
+        target: INVOICE_ADDRESS as AddressType,
+        functionSignature: 'release(_milestone)',
+        calldata: encodeFunctionData({
+          abi: RELEASE_FUNCTION_ABI,
+          functionName: 'release',
+          args: [index],
+        }),
+        value: '',
+      }
 
-    removeAllTransactions()
+      const releaseEscrowTxnData = {
+        type: TransactionType.RELEASE_ESCROW_MILESTONE,
+        summary: `Release Milestone #${index + 1} for ${invoiceData?.title}`,
+        transactions: [releaseMilestone],
+      }
 
-    const releaseMilestone = {
-      target: INVOICE_ADDRESS as AddressType,
-      functionSignature: 'release(_milestone)',
-      calldata: encodeFunctionData({
-        abi: RELEASE_FUNCTION_ABI,
-        functionName: 'release',
-        args: [index],
-      }),
-      value: '',
-    }
+      setTimeout(() => addTransaction(releaseEscrowTxnData), 3000)
 
-    const releaseEscrowTxnData = {
-      type: TransactionType.RELEASE_ESCROW_MILESTONE,
-      summary: `Release Milestone #${index + 1} for ${invoiceData?.title}`,
-      transactions: [releaseMilestone],
-    }
+      router.push({
+        pathname: `/dao/[network]/[token]/proposal/review`,
+        query: {
+          network: router.query?.network,
+          token: router.query?.token,
+        },
+      })
+    },
+    [router, clientAddress, addresses, addTransaction, invoiceData?.title]
+  )
 
-    addTransaction(releaseEscrowTxnData)
+  const renderMilestoneButton = useCallback(
+    (index: number, isReleased: boolean, isNext: boolean) => {
+      if (isReleased) {
+        return (
+          <Button variant="secondary" disabled>
+            <Icon id="checkInCircle" />
+            Milestone Released
+          </Button>
+        )
+      }
 
-    // Navigate to review page with release txn loaded
-    router.push({
-      pathname: `/dao/[network]/[token]/proposal/review`,
-      query: {
-        network: router.query?.network,
-        token: router.query?.token,
-      },
-    })
-  }
-
-  const renderMilestoneButton = (index: number, isReleased: boolean, isNext: boolean) => {
-    if (isReleased) {
       return (
-        <Button variant="secondary" disabled>
-          <Icon id="checkInCircle" />
-          Milestone Released
+        <Button
+          variant={isNext ? 'primary' : 'secondary'}
+          disabled={!isNext}
+          onClick={() => isNext && handleReleaseMilestone(index)}
+        >
+          Release Milestone
         </Button>
       )
-    }
+    },
+    [handleReleaseMilestone]
+  )
 
-    return (
-      <Button
-        variant={isNext ? 'primary' : 'secondary'}
-        disabled={!isNext}
-        onClick={() => isNext && handleReleaseMilestone(index)}
-      >
-        Release Milestone
-      </Button>
-    )
-  }
-
-  const renderDocumentLink = (doc: Partial<Document>) => {
+  const renderDocumentLink = useCallback((doc: Partial<Document>) => {
     if (!doc.src) return null
 
     const href =
@@ -190,10 +201,10 @@ export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
         {href}
       </OptionalLink>
     )
-  }
+  }, [])
 
-  const milestonesDetails = invoiceData?.milestones?.map(
-    (milestone: IpfsMilestone, index: number) => {
+  const milestonesDetails = useMemo(() => {
+    return invoiceData?.milestones?.map((milestone: IpfsMilestone, index: number) => {
       const releasedCount = Number(numOfMilestonesReleased?.toString() || 0)
       const isReleased = releasedCount - 1 >= index
       const isNext = releasedCount === index
@@ -215,17 +226,22 @@ export const MilestoneDetails: React.FC<MilestoneDetailsProps> = ({
 
             <Text>{milestone.description || 'No Description'}</Text>
 
-            <Stack>
-              {milestone.documents?.map((doc, index) => renderDocumentLink(doc))}
-            </Stack>
+            <Stack>{milestone.documents?.map((doc, i) => renderDocumentLink(doc))}</Stack>
 
             {!!executionTransactionHash &&
               renderMilestoneButton(index, isReleased, isNext)}
           </Stack>
         ),
       }
-    }
-  )
+    })
+  }, [
+    invoiceData?.milestones,
+    numOfMilestonesReleased,
+    milestoneAmount,
+    executionTransactionHash,
+    renderMilestoneButton,
+    renderDocumentLink,
+  ])
 
   return <Accordion items={milestonesDetails || []} />
 }

@@ -84,6 +84,21 @@ export const ProposalDescription: React.FC<ProposalDescriptionProps> = ({
   return (
     <Flex className={propPageWrapper}>
       <Flex direction={'column'} mt={{ '@initial': 'x6', '@768': 'x13' }}>
+        {isEscrow && decodedTxnData && (
+          <Section title="Escrow Milestones">
+            {decodedTxnData?._escrowData?.value ? (
+              <MilestoneDetails
+                decodedTxnData={decodedTxnData}
+                executionTransactionHash={executionTransactionHash}
+              />
+            ) : (
+              <Text variant="code" color="negative">
+                Error Decoding Escrow Milestones
+              </Text>
+            )}
+          </Section>
+        )}
+
         <Section title="Description">
           <Paragraph overflow={'auto'}>
             {description && (
@@ -97,21 +112,6 @@ export const ProposalDescription: React.FC<ProposalDescriptionProps> = ({
             )}
           </Paragraph>
         </Section>
-
-        {isEscrow && decodedTxnData && (
-          <Section title="Escrow Milestones">
-            {decodedTxnData?._escrowData?.value ? (
-              <MilestoneDetails
-                decodedTxnData={decodedTxnData}
-                executionTransactionHash={executionTransactionHash}
-              />
-            ) : 
-              <Text variant="code" color="negative">
-                Error Decoding Escrow Milestones
-              </Text>
-            }
-          </Section>
-        )}
 
         <Section title="Proposer">
           <Flex direction={'row'} placeItems={'center'}>
