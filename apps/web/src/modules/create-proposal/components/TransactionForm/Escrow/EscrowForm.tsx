@@ -120,7 +120,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
 
   const { formValues, setFormValues } = useEscrowFormStore()
   const {
-    addresses: { multiSig, governor, treasury },
+    addresses: { multiSig, treasury },
   } = useDaoStore()
 
   const handleSubmit = useCallback(
