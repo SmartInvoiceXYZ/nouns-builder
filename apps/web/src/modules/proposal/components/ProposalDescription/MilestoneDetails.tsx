@@ -1,8 +1,9 @@
 import { Button, Stack, Text } from '@zoralabs/zord'
 import axios from 'axios'
 import { IPFS_GATEWAY } from 'ipfs-service/src/gateway'
+import _ from 'lodash'
 import { useRouter } from 'next/router'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import useSWR from 'swr'
 import {
   Hex,
@@ -28,7 +29,6 @@ import { AddressType } from 'src/typings'
 
 import { DecodedTransaction } from './ProposalDescription'
 
-// Constants remain unchanged
 const RELEASE_FUNCTION_ABI = [
   {
     inputs: [{ internalType: 'uint256', name: '_milestone', type: 'uint256' }],
@@ -39,9 +39,22 @@ const RELEASE_FUNCTION_ABI = [
   },
 ]
 
-const INVOICE_ADDRESS = '0x5C2ac7D59B6CCe44da4a4a6285cC5260e14cf6A5' // todo: get from exec txn hash
 const SAFE_APP_URL =
   'https://app.safe.global/share/safe-app?appUrl=https://app.smartinvoice.xyz/invoices'
+
+const INVOICE_QUERY = `
+  query GetInvoice($txHash: String!) {
+    invoices(where: {
+      creationTxHash: $txHash
+    }) {
+      address
+      id
+      createdAt
+      network
+      creationTxHash
+    }
+  }
+`
 
 interface MilestoneDetailsProps {
   decodedTxnData: DecodedTransaction
@@ -53,6 +66,28 @@ interface Document {
   src: string
 }
 
+const useNetworkConfig = () => {
+  const [networkConfig, setNetworkConfig] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    const loadNetworkConfig = async () => {
+      try {
+        const { NETWORK_CONFIG } = await import('@smartinvoicexyz/constants')
+        setNetworkConfig(NETWORK_CONFIG)
+      } catch (err) {
+        setError(err as Error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadNetworkConfig()
+  }, [])
+
+  return { networkConfig, isLoading, error }
+}
+
 export const MilestoneDetails = ({
   decodedTxnData,
   executionTransactionHash,
@@ -60,9 +95,27 @@ export const MilestoneDetails = ({
   const router = useRouter()
   const { chain: invoiceChain } = useChainStore()
   const { addresses } = useDaoStore()
-  const { removeAllTransactions, addTransaction } = useProposalStore()
+  const { addTransaction } = useProposalStore()
+  const { networkConfig, isLoading, error: networkConfigError } = useNetworkConfig()
 
-  // Decode transaction data
+  const subgraphURL = useMemo(() => {
+    return networkConfig?.[invoiceChain.id]?.SUBGRAPH
+  }, [networkConfig, invoiceChain.id])
+
+  const { data: INVOICE_ADDRESS } = useSWR(
+    [subgraphURL, executionTransactionHash],
+    async () => {
+      const response = await axios.post(subgraphURL, {
+        query: INVOICE_QUERY,
+        variables: {
+          txHash: executionTransactionHash,
+        },
+      })
+
+      return _.get(response, 'data.data.invoices[0].address')
+    }
+  )
+
   const { invoiceCid, clientAddress, milestoneAmount } = useMemo(() => {
     const decodedAbiData = decodeAbiParameters(
       parseAbiParameters([
@@ -89,7 +142,6 @@ export const MilestoneDetails = ({
     }
   }, [decodedTxnData])
 
-  // Fetch invoice data
   const { data: invoiceData } = useSWR(
     invoiceCid ? [SWR_KEYS.IPFS, invoiceCid] : null,
     async () => {
@@ -100,11 +152,9 @@ export const MilestoneDetails = ({
         console.error('Failed to fetch invoice data:', error)
         return null
       }
-    },
-    { revalidateOnFocus: false }
+    }
   )
 
-  // Get released milestones count
   const { data: numOfMilestonesReleased } = useContractRead({
     address: INVOICE_ADDRESS,
     abi: [
@@ -242,6 +292,14 @@ export const MilestoneDetails = ({
     renderMilestoneButton,
     renderDocumentLink,
   ])
+
+  if (isLoading) {
+    return <div>Loading network configuration...</div>
+  }
+
+  if (networkConfigError) {
+    return <div>Error loading network configuration</div>
+  }
 
   return <Accordion items={milestonesDetails || []} />
 }

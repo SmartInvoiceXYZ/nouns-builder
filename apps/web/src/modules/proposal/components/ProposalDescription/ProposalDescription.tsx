@@ -1,7 +1,8 @@
 import { Box, Flex, Paragraph, Text, atoms } from '@zoralabs/zord'
-import { useEffect } from 'hono/jsx'
 import { toLower } from 'lodash'
 import Image from 'next/image'
+import { useEffect } from 'react'
+import { Suspense } from 'react'
 import React, { ReactNode } from 'react'
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
@@ -86,16 +87,18 @@ export const ProposalDescription: React.FC<ProposalDescriptionProps> = ({
       <Flex direction={'column'} mt={{ '@initial': 'x6', '@768': 'x13' }}>
         {isEscrow && decodedTxnData && (
           <Section title="Escrow Milestones">
-            {decodedTxnData?._escrowData?.value ? (
-              <MilestoneDetails
-                decodedTxnData={decodedTxnData}
-                executionTransactionHash={executionTransactionHash}
-              />
-            ) : (
-              <Text variant="code" color="negative">
-                Error Decoding Escrow Milestones
-              </Text>
-            )}
+            <Suspense fallback={<Text variant="code">Loading escrow milestones...</Text>}>
+              {decodedTxnData?._escrowData?.value ? (
+                <MilestoneDetails
+                  decodedTxnData={decodedTxnData}
+                  executionTransactionHash={executionTransactionHash}
+                />
+              ) : (
+                <Text variant="code" color="negative">
+                  Error Decoding Escrow Milestones
+                </Text>
+              )}
+            </Suspense>
           </Section>
         )}
 
