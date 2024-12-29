@@ -172,6 +172,10 @@ const useEscrowFormStore = create(
       formValues: initialState,
       setFormValues: (values) => set({ formValues: values }),
       resetForm: () => set({ formValues: initialState }),
+      clear: () => {
+        set({ formValues: initialState })
+        localStorage.removeItem('escrow-form-storage')
+      },
     }),
     {
       name: 'escrow-form-storage',

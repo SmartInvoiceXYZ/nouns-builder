@@ -25,6 +25,7 @@ export interface EscrowFormState {
   formValues: EscrowFormValues
   setFormValues: (values: EscrowFormValues) => void
   resetForm: () => void
+  clear: () => void
 }
 
 export interface EscrowFormProps {
