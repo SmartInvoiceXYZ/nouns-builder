@@ -18,7 +18,7 @@ const getDAOAddresses = async (chainId: CHAIN_ID, tokenAddress: AddressType) => 
 
   const [metadata, auction, treasury, governor] = unpackOptionalArray(addresses, 4)
 
-  const multiSig = await getDaoMultiSig(governor as AddressType, chainId)
+  const multiSig = await getDaoMultiSig(treasury as AddressType, chainId)
 
   const hasMissingAddresses = Object.values(addresses).includes(NULL_ADDRESS)
   if (hasMissingAddresses) return null

@@ -214,7 +214,7 @@ export const getServerSideProps: GetServerSideProps = async ({
     } = token.dao
 
     const multiSigAddress = (await getDaoMultiSig(
-      governorAddress,
+      treasuryAddress,
       chain.id
     )) as AddressType
 

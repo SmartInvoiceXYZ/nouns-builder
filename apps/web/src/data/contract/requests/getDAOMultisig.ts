@@ -24,7 +24,7 @@ interface DecodedData {
 
 const ATTESTATION_SCHEMA_UID = `0x1289c5f988998891af7416d83820c40ba1c6f5ba31467f2e611172334dc53a0e`
 const SMART_INVOICE_MULTISIG = `0x503a5161D1c5D9d82BF35a4c80DA0C3Ad72d9244` // TODO: replace with actual multisig address
-const BUILDER_DAO_GOVERNOR= `0x6623d2a90429475ed9c8a4b613c4b5b4f8428cee`
+const BUILDER_DAO_TREASURY= `0xcf325a4c78912216249b818521b0798a0f904c10`
 const BUILDER_DAO_OPS_MULTISIG = `0x58eAEfBEd9EEFbC564E302D0AfAE0B113E42eAb3`
 
 const ATTESTATION_URL: Record<CHAIN_ID, string> = {
@@ -40,11 +40,11 @@ const ATTESTATION_URL: Record<CHAIN_ID, string> = {
 }
 
 export async function getDaoMultiSig(
-  daoAddress: string,
+  daoTreasuryAddress: string,
   chainId: CHAIN_ID
 ): Promise<string | null> {
   // Input validation
-  if (!daoAddress || !isAddress(daoAddress)) {
+  if (!daoTreasuryAddress || !isAddress(daoTreasuryAddress)) {
     return null
   }
 
@@ -54,8 +54,8 @@ export async function getDaoMultiSig(
   }
 
   const multiSigIssuerPriorityOrder = [
-    checksumAddress(daoAddress),
-    checksumAddress(BUILDER_DAO_GOVERNOR),
+    checksumAddress(daoTreasuryAddress),
+    checksumAddress(BUILDER_DAO_TREASURY),
     checksumAddress(BUILDER_DAO_OPS_MULTISIG), 
     checksumAddress(SMART_INVOICE_MULTISIG)
   ];
@@ -67,7 +67,7 @@ export async function getDaoMultiSig(
       where: {
         schemaId: { equals: "${ATTESTATION_SCHEMA_UID}" }
         attester: { in: ["${multiSigIssuerPriorityOrder.join('","')}"] }
-        recipient: { equals: "${checksumAddress(daoAddress)}" }
+        recipient: { equals: "${checksumAddress(daoTreasuryAddress)}" }
       }
     ) {
       attester

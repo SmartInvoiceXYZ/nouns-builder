@@ -212,7 +212,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, req, res 
     auctionAddress,
   } = data.dao
 
-  const multiSigAddress = (await getDaoMultiSig(governorAddress, chain.id)) as AddressType
+  const multiSigAddress = (await getDaoMultiSig(treasuryAddress, chain.id)) as AddressType
 
   const ogMetadata: ProposalOgMetadata = {
     proposal: {
