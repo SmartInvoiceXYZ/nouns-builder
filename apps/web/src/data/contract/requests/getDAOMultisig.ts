@@ -23,7 +23,9 @@ interface DecodedData {
 }
 
 const ATTESTATION_SCHEMA_UID = `0x1289c5f988998891af7416d83820c40ba1c6f5ba31467f2e611172334dc53a0e`
-const ATTESTATION_ISSUER = `0x503a5161D1c5D9d82BF35a4c80DA0C3Ad72d9244` // TODO: Update/ get from env post handoff
+const SMART_INVOICE_MULTISIG = `0x503a5161D1c5D9d82BF35a4c80DA0C3Ad72d9244` // TODO: replace with actual multisig address
+const BUILDER_DAO_GOVERNOR= `0x6623d2a90429475ed9c8a4b613c4b5b4f8428cee`
+const BUILDER_DAO_OPS_MULTISIG = `0x58eAEfBEd9EEFbC564E302D0AfAE0B113E42eAb3`
 
 const ATTESTATION_URL: Record<CHAIN_ID, string> = {
   [CHAIN_ID.ETHEREUM]: 'https://easscan.org/graphql',
@@ -51,21 +53,30 @@ export async function getDaoMultiSig(
     return null
   }
 
+  const multiSigIssuerPriorityOrder = [
+    checksumAddress(daoAddress),
+    checksumAddress(BUILDER_DAO_GOVERNOR),
+    checksumAddress(BUILDER_DAO_OPS_MULTISIG), 
+    checksumAddress(SMART_INVOICE_MULTISIG)
+  ];
+  
+
   const query = `
-    query Attestations {
-      attestations(
-        where: {
-          schemaId: { equals: "${ATTESTATION_SCHEMA_UID}" }
-          attester: { equals: "${checksumAddress(ATTESTATION_ISSUER)}" }
-          recipient: { equals: "${checksumAddress(daoAddress)}" }
-        }
-      ) {
-        attester
-        recipient
-        decodedDataJson
+  query Attestations {
+    attestations(
+      where: {
+        schemaId: { equals: "${ATTESTATION_SCHEMA_UID}" }
+        attester: { in: ["${multiSigIssuerPriorityOrder.join('","')}"] }
+        recipient: { equals: "${checksumAddress(daoAddress)}" }
       }
+    ) {
+      attester
+      recipient
+      decodedDataJson
     }
-  `
+  }
+`
+
 
   try {
     const response = await axios.post<AttestationResponse>(
@@ -79,12 +90,22 @@ export async function getDaoMultiSig(
     )
 
     const attestations = response?.data?.data?.attestations
+
+
+    // Sort attestations based on priority order
+    const sortedAttestations = attestations.sort((a, b) => {
+      const indexA = multiSigIssuerPriorityOrder.indexOf(a.attester as `0x${string}`)
+      const indexB = multiSigIssuerPriorityOrder.indexOf(b.attester as `0x${string}`)
+      return indexA - indexB
+    })
+
     if (!attestations?.length) {
       return null
     }
 
     try {
-      const decodedData = JSON.parse(attestations[0].decodedDataJson) as DecodedData[]
+      // Get the first attestation from priority
+      const decodedData = JSON.parse(sortedAttestations[0].decodedDataJson) as DecodedData[]
 
       const multisigAddress = decodedData[0]?.value?.value
       if (!multisigAddress || !isAddress(multisigAddress)) {
