@@ -89,8 +89,8 @@ export const SmartContracts = () => {
           <ContractLink title="Governor" address={addresses.governor} />
           <ContractLink title="Treasury" address={addresses.treasury} />
           <ContractLink title="Metadata" address={addresses.metadata} />
-          {addresses?.multiSig && (
-            <ContractLink title="MultiSig" address={addresses.multiSig} />
+          {addresses?.escrowDelegate && (
+            <ContractLink title="Escrow Delegate" address={addresses.escrowDelegate} />
           )}
         </Flex>
       </Flex>

@@ -120,7 +120,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
 
   const { formValues, setFormValues } = useEscrowFormStore()
   const {
-    addresses: { multiSig, treasury },
+    addresses: { escrowDelegate, treasury },
   } = useDaoStore()
 
   const handleSubmit = useCallback(
@@ -157,7 +157,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
       <Formik
         initialValues={{
           ...formValues,
-          clientAddress: multiSig || treasury || '',
+          clientAddress: escrowDelegate || treasury || '',
         }}
         validationSchema={EscrowFormSchema}
         onSubmit={handleSubmit}
@@ -192,7 +192,7 @@ const EscrowForm: React.FC<EscrowFormProps> = ({
                     'The wallet address to which funds will be released on milestone completions.'
                   }
                 />
-                {!multiSig && (
+                {!escrowDelegate && (
                   <SmartInput
                     type={TEXT}
                     formik={formik}

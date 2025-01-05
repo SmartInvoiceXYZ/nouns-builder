@@ -11,7 +11,7 @@ import { Meta } from 'src/components/Meta'
 import { CACHE_TIMES } from 'src/constants/cacheTimes'
 import { PUBLIC_DEFAULT_CHAINS } from 'src/constants/defaultChains'
 import SWR_KEYS from 'src/constants/swrKeys'
-import { getDaoMultiSig } from 'src/data/contract/requests/getDAOMultisig'
+import { getEscrowDelegate } from 'src/data/contract/requests/getEscrowDelegate'
 import { SDK } from 'src/data/subgraph/client'
 import {
   formatAndFetchState,
@@ -212,7 +212,10 @@ export const getServerSideProps: GetServerSideProps = async ({ params, req, res 
     auctionAddress,
   } = data.dao
 
-  const multiSigAddress = (await getDaoMultiSig(treasuryAddress, chain.id)) as AddressType
+  const escrowDelegateAddress = (await getEscrowDelegate(
+    treasuryAddress,
+    chain.id
+  )) as AddressType
 
   const ogMetadata: ProposalOgMetadata = {
     proposal: {
@@ -233,7 +236,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, req, res 
     governor: governorAddress,
     treasury: treasuryAddress,
     auction: auctionAddress,
-    multiSig: multiSigAddress,
+    escrowDelegate: escrowDelegateAddress,
   }
 
   const ogImageURL = `${protocol}://${
