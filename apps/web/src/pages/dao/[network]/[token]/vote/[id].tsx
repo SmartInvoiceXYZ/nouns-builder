@@ -12,6 +12,7 @@ import { CACHE_TIMES } from 'src/constants/cacheTimes'
 import { PUBLIC_DEFAULT_CHAINS } from 'src/constants/defaultChains'
 import SWR_KEYS from 'src/constants/swrKeys'
 import { getEscrowDelegate } from 'src/data/contract/requests/getEscrowDelegate'
+import { getPropDates } from 'src/data/contract/requests/getPropDates'
 import { SDK } from 'src/data/subgraph/client'
 import {
   formatAndFetchState,
@@ -230,6 +231,21 @@ export const getServerSideProps: GetServerSideProps = async ({ params, req, res 
     daoImage: contractImage,
   }
 
+  const propDates = (await getPropDates(
+    treasuryAddress,
+    chain.id,
+    params?.id as string
+  )) as Array<{
+    propId: number
+    replyTo: string
+    response: string
+    milestoneId: number
+  }>
+
+
+  console.log({propDates})
+
+
   const addresses: DaoContractAddresses = {
     token: tokenAddress,
     metadata: metadataAddress,
@@ -262,6 +278,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, req, res 
       ogImageURL,
       proposalId: proposal.proposalId,
       addresses,
+      propDates,
     },
   }
 }
