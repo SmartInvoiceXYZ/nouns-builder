@@ -13,6 +13,7 @@ import { PUBLIC_DEFAULT_CHAINS } from 'src/constants/defaultChains'
 import SWR_KEYS from 'src/constants/swrKeys'
 import { getEscrowDelegate } from 'src/data/contract/requests/getEscrowDelegate'
 import { getPropDates } from 'src/data/contract/requests/getPropDates'
+
 import { SDK } from 'src/data/subgraph/client'
 import {
   formatAndFetchState,
